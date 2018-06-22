@@ -2,37 +2,6 @@
 
 class CourseManager {
   constructor(theUser) {
-<<<<<<< HEAD
-    this.theUser = theUser; // need to save the user so we can get it later
-    
-    // jquery to get the coure-table-body element and make it sortable
-    $('#course-table-body').sortable();
-    
-    // jquery to get the add button and when user clicks it, it will call our method
-    $('#add-course').click(() => this.addCourse());
-
-    // This reads the current courses from the database and
-    // adds them to the webpage so we can see them.
-    // UI means User Inteface.
-    var courseRef = firebase.database().ref(
-        // This is the path to the database where the courses are saved
-        // Each component of the path is separated by /
-        // this.theUser.uid is the user id
-        // Each user has a unique id
-        'users/' + this.theUser.uid + '/courses'
-        );
-        
-    // This gets the value one time so we can discover the course we
-    // saved previously.
-    courseRef.once('value', 
-      // We will define a callback function here.
-      // We won't get the courses right away.
-      // So this function will be called later.
-      (snapshot /* argument (or parameter) to the callback */) => {
-      // This is inside the body of the callback function.
-      // It is called with the courses.
-      // The snapshot has a method val() which will get the courses.
-=======
     this.theUser = theUser;
     //this.nextkey = 0;
     //$('#course-table-body').sortable();
@@ -44,17 +13,9 @@ class CourseManager {
     var courseRef = firebase.database().ref('user_course/' + this.theUser.uid + '/courses');
     courseRef.once('value', (snapshot) => {
 
->>>>>>> 663a94582921b5ee8475c034c8b17707373f53d3
       let courses = snapshot.val();
       if (courses) {
-        // The courses looks like this
-        // { 
-        //   "courseId1": { title: "title1", description: "description1" }, 
-        //   "courseId2": { title: "title2", description: "description2" }
-        // }
-        // the for loop will set id to "courseId1" then "courseId2"
         for (let id in courses) {
-          // set course to { title: "title1", description: "description1" }
           let course = courses[id];
           this.insertCourseInTable(id, course);
         }
@@ -70,45 +31,9 @@ class CourseManager {
     });
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  setupDeleteHandler() {
-    // When we create a row in the table, we will use the class course-delete-row
-    // so we can find it using $('.course-delete-row').
-    // We set the click handler to delete the course.
-    $('.course-delete-row').click((e) => {
-      // e.currentTarget is the delete icon
-      var i = e.currentTarget;
-      // it is inside a td
-      var td = i.parentElement;
-      // The td is inside a tr
-      var tr = td.parentElement;
-      // The tr is inside a tbody
-      var tbody = tr.parentElement;
-      // The format of the id is "course_<id>"
-      // We want to get the <id> part.
-      var id = tr.id.substr("course_".length);
-      var testDataRef = firebase.database().ref('users/' + this.theUser.uid + '/courses/' + id);
-      testDataRef.remove() // This makes request to firebase
-        .then(()=>{// if it succeeds we will go there
-        
-          // We want to make sure we update the UI only if firebase succeeds
-          tbody.removeChild(tr);
-          
-        }).catch(()=>{ // if it fails we will go here
-          console.log("failed to delete");
-=======
-  generateid(){
-    firebase.database().ref('users').once("value").then(function(snapshot) {
-      if(snapshot.numChildren()==0){
-      this.nextkey = 0;
-      }
-    });
-=======
   generateid(ref){
     // Get a key for a new Post.
     return firebase.database().ref(ref).push().key;
->>>>>>> 083c59e5676e1e5bf9577d706f555a573922c110
   }
 
   setupEditHandler() {
@@ -162,7 +87,6 @@ class CourseManager {
           $('#imgname').val("");//hidden
           $('#course-title').val("");
           $('#course-description').val("");*/
->>>>>>> 663a94582921b5ee8475c034c8b17707373f53d3
         });
 
     }).css('cursor', 'pointer');
@@ -198,17 +122,6 @@ class CourseManager {
           imageurl: imageurl,
           imagename:imagename
         };
-<<<<<<< HEAD
-        var testDataRef = firebase.database().ref('users/' + this.theUser.uid + '/courses/' + courseId);
-        testDataRef.update(updates)
-          .then(()=>{ // if it worked then we go here
-          
-            $(td).text(newTitle);
-            
-          }).catch(()=>{ // if failed we go here
-            console.log("failed to update");
-          });
-=======
 
         // Write the new post's data simultaneously in the posts list and the user's post list.
         var updates = {};
@@ -291,7 +204,6 @@ class CourseManager {
 
           reader.readAsDataURL(input.files[0]);
         }
->>>>>>> 663a94582921b5ee8475c034c8b17707373f53d3
       }
 
       $("#editimagefile").change(function() {
@@ -352,17 +264,6 @@ class CourseManager {
     }).css('cursor', 'pointer');
   }
 
-<<<<<<< HEAD
-  insertCourseInTable(id, course) {
-    var list = $('#course-table-body').append(
-      `<tr id="course_${id}">
-        ${this.getMdlTableSelector()}
-        <td class="mdl-data-table__cell--non-numeric course-title ">${ course.title }</td>
-        <td class="mdl-data-table__cell--non-numeric course-description">${ course.description }</td>
-        <td><i class="material-icons course-delete-row">delete</i></td>
-      </tr>`);
-    componentHandler.upgradeElements(list.children().last());
-=======
   insertCourseInTable(courseid, course) {
       var list = $('.flex-container').append(
         `<div class="demo-card-square mdl-card mdl-shadow--2dp" id="courseid_${courseid}">
@@ -384,7 +285,6 @@ class CourseManager {
                 </a>
             </div>
         </div>`);
->>>>>>> 663a94582921b5ee8475c034c8b17707373f53d3
   }
 
   validateCourseInfo() {
@@ -462,12 +362,6 @@ class CourseManager {
       imageurl: imageurl,
       imagename: imagename
     };
-<<<<<<< HEAD
-    let ref = firebase.database().ref('users/' + this.theUser.uid + '/courses/' + id);
-    ref.set(course)
-    .then(() => { // if it works then ...
-      this.insertCourseInTable(id, course);
-=======
 
     // Write the new post's data simultaneously in the posts list and the user's post list.
     var updates = {};
@@ -482,22 +376,12 @@ class CourseManager {
 
       // if it works then ...
       this.insertCourseInTable(courseid, course);
->>>>>>> 663a94582921b5ee8475c034c8b17707373f53d3
 
       this.setupDeleteHandler();
       this.setupEditHandler();
       this.setupEditImageHandler();
       //this.setupTitleChangeHandler();
 
-<<<<<<< HEAD
-      $('#course-title').val("");
-      $('#course-description').val("");
-    }).catch(()=>{
-      console.log("failed to insert");
-    });
-  }
-}
-=======
       //componentHandler.upgradeElements(list.children().last());
 
       //get the dialog ref and closed it
@@ -579,4 +463,3 @@ class CourseManager {
     }
   }
 }
->>>>>>> 663a94582921b5ee8475c034c8b17707373f53d3
