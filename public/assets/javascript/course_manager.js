@@ -1,7 +1,5 @@
 "use strict";
 
-asdasdasdasd
-
 class CourseManager {
   constructor(theUser) {
     this.theUser = theUser;
