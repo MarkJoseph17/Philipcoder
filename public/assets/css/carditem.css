@@ -1,0 +1,136 @@
+.carditem-container{
+    position: relative; 
+    width: 100%;
+    padding: 2px; 
+    margin: 2px;
+    background-color: white;
+    cursor: text;
+    border: 1px solid silver;
+}
+.carditem-container:hover{
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+}
+.items-container > ul{
+    padding-left: 0px;
+    list-style-type: none;
+    padding: 1px;
+}
+.items-container > ul > li{
+    position: relative;
+    background-color: white;
+    border: 1px solid white;
+    background-position: left center;
+    background-repeat:no-repeat;
+    background-size: 15px;
+    cursor: text;
+    padding: 5px 2px 5px 20px;
+    margin: 1px;
+}
+.items-container > ul > li:hover{
+    border: 1px solid silver;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+}
+/* item close button css*/
+.carditem-close-but{
+    position: absolute;
+    top: 0px;
+    left: -22px;
+    color: gray;
+    cursor: pointer; 
+    line-height: 70%;
+    text-align: center;
+    padding: 2px;
+    background-color: white;
+}
+.carditem-close-but i{
+  font-size: 15px;  
+}
+.carditem-close-but:hover{
+    color: gainsboro;
+    background-color: #f04e4e;
+}
+/* drag button */
+.carditem-drag-but{
+  position: absolute;
+  top: 20px;
+  left: -22px;
+  color: gray;
+  cursor: move; 
+  line-height: 70%;
+  text-align: center;
+  padding: 2px;
+  background-color: white;
+}
+.carditem-drag-but i{
+  font-size: 15px;  
+}
+/* drag button */
+
+/* video item css style */
+.videoitem{
+    display: flex;
+    flex-flow: row wrap;
+}
+.vid-col-1{
+    flex: 40%;
+    padding: 10px;
+    margin: 0px; 
+    box-sizing: border-box;
+    height: 240px;
+}
+.vid-col-2{
+    flex: 60%;
+    padding: 10px;
+    margin: 0px; 
+    box-sizing: border-box;
+    height: 240px;
+}
+/* video item css style */
+
+/* Reading list css style */
+.readinglist{
+    position: relative;
+    width: 100%; 
+    cursor: text; 
+    display: flex; 
+    flex-flow: row wrap-reverse;
+}
+.contentbar{
+    position: relative;
+    background-color: white; 
+    flex: 70%; 
+    margin: 0px; 
+    padding-bottom: 15px; 
+    overflow: auto;
+    height: 500px;
+}
+.sidebar{
+    position: relative;
+    background-color: white; 
+    border-left: 1px solid silver; 
+    flex: 30%; 
+    margin: 0px;
+    height: auto;
+}
+.sidebar > ul{
+    padding: 0px;
+    background-color: white;
+}
+.sidebar > ul > li {
+    padding: 10px;
+    list-style-type: none;
+}
+.sidebar > ul > li:hover{
+    background-color: rgb(235, 232, 232);
+}
+.dropleft{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+.dropleft .btn{
+    padding: 5px;
+    background-color: white;
+    margin: 2px;
+}
+/* Reading list css style */

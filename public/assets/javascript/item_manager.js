@@ -1,122 +1,105 @@
 "use strict";
 class ItemManager{
-    constructor(cardid, elementtype){
-        this.cardid = cardid;
+    constructor(cardid, carditemid,  elementtype){
+        this.cardid = cardid;//also get the parent card id of this newly created reading list item, we pass it through our constructor of this class
+        this.carditemid = carditemid;//also get the parent readinglist item id of this newly created item, we pass it through our constructor of this class
         let newitemid = (new Date()).getTime().toString(36);//creates new item id
         this.itemid = newitemid;//Initialize item id
 
         var element = null;//Initialize element 
-        if(elementtype === "h1"){
-            element = `<h1 id="item-id-${this.itemid}" class="${elementtype}">Heading</h1>`;
-        }else if(elementtype === "p1"){
-            element = `<p id="item-id-${this.itemid}" class="${elementtype}">Paragraph</p>`;
+
+        //this conditional statements filters which item type to be created
+        if(elementtype === "textbox"){
+            element = `<div id="item-id-${this.itemid}" class="editable" data-type="textbox"></div>`;
+        }else if(elementtype === "table"){
+            element = `<div id="item-id-${this.itemid}" class="editable" data-type="table"></div>`;
+        }else if(elementtype === "list"){
+            element = `<div id="item-id-${this.itemid}" class="editable" data-type="list"></div>`;
+        }else if(elementtype === "image"){
+            element = `<div id="item-id-${this.itemid}" class="editable" data-type="image"></div>`;
         }
 
-        $('#cardid_'+cardid).find('.items-container').append(`
-            <div id="item-con-id-${this.itemid}" class="item-container">
-              <span class="close-but">
-                <i class="material-icons">close</i>
-              </span>
-              <div class="drag-but">
-                <i class="material-icons">reorder</i>
-              </div>
-                ${element}
-            </div>
+        $('#readingitem-id-'+this.carditemid).find('.items-container > ul').append(`
+            <li>
+                <span class="item-close-but">
+                    <i class="material-icons">close</i>
+                </span>
+                <div id="item-con-id-${this.itemid}" class="item-container">
+                    ${element}
+                </div>
+            </li>
         `);
 
-        $('.close-but').click(function(e){
-          $(this).parent().remove();
-        });
+        this.initializeMediumEditor(elementtype);
+        this.setEventHandlerListener();
 
-        this.sethandler(this.itemid, elementtype);
+        $('#item-id-'+this.itemid).focus();
     }
 
-    autoresize(itemid){
-        //creadits to the author: https://stephanwagner.me/auto-resizing-textarea
-        var offset;
-   
-        var resizeTextarea = function(el) {
-            offset = el.offsetHeight - el.clientHeight;
-            $(el).css('height', 'auto').css('height', el.scrollHeight + offset);
-        };
-  
-        $('#item-id-'+itemid).on('keyup input', function() { 
-          resizeTextarea(this); 
+    initializeMediumEditor(elementtype){
+
+        var buttons = [];
+        var placeholderText;
+        var disableEditing;
+
+        if(elementtype === "textbox"){
+            disableEditing = false;
+            buttons = ['bold', 'italic', 'underline', 'anchor', 'h2', 'h3', 'quote','justifyLeft','justifyCenter','justifyRight'];
+            placeholderText = 'Type your text';
+        }else if(elementtype === "table"){
+            disableEditing = false;
+            buttons = ['bold', 'italic', 'underline', 'justifyLeft', 'justifyCenter', 'justifyRight', 'table'];
+            placeholderText = 'Insert table';
+        }else if(elementtype === "list"){
+            disableEditing = false;
+            buttons = ['bold', 'italic', 'underline', 'justifyLeft','justifyCenter','justifyRight','unorderedlist','orderedlist',];
+            placeholderText = 'Insert list';
+        }else if(elementtype === "image"){
+            disableEditing = true;
+            buttons = [];
+            placeholderText = 'input/drag image here';
+        }
+
+        var editor = new MediumEditor('#item-id-'+this.itemid, {
+            disableEditing: disableEditing,
+            buttonLabels: 'fontawesome',
+            placeholder: {
+                text: placeholderText,
+                hideOnClick: true
+            },  
+            extensions: {
+                table: new MediumEditorTable()
+              },
+            toolbar: {
+                buttons: buttons,
+                static: true,
+                sticky: true,
+                align: 'left',
+                updateOnEmptySelection: true
+            }
         });
-    }
 
-    sethandler(itemid, elementtype){
-
-        var c, id, textcontent, classname, tagname, elementtoadd;
-        
-        if(elementtype === "input"){
-            $('#item-id-'+itemid).keypress((e)=>{//Event handler when enter key pushes
-              if(e.which == 13){ // the enter key code
-                  var item = e.currentTarget;//gets the current element the "this" keyword isn't working
-
-                  textcontent = $(item).val();
-                  
-                  var prevtagname = item.getAttribute("data-tn").toString().toLowerCase();
-                  var prevclassname = item.getAttribute("data-cn").toString().toLowerCase();
-          
-                  elementtoadd = `
-                          <${prevtagname} id="item-id-${itemid}" class="${prevclassname}">${textcontent}</${prevtagname}>
-                      `;
-                  
-                  $(item).remove();
-                  $('#item-con-id-'+itemid).append(elementtoadd);
-                  $('#item-id-'+itemid).focus();   
-                  this.sethandler(itemid, prevtagname);   
-                  return false;  
-                }
-            }).focus().select(); 
-
-            $('#item-id-'+itemid).focusout((e)=>{//Event handler when textarea lost focus           
-                var item = e.currentTarget;//gets the current element the "this" keyword isn't working
-
-                  textcontent = $(item).val();
-                  
-                  var prevtagname = item.getAttribute("data-tn").toString().toLowerCase();
-                  var prevclassname = item.getAttribute("data-cn").toString().toLowerCase();
-          
-                  elementtoadd = `
-                          <${prevtagname} id="item-id-${itemid}" class="${prevclassname}">${textcontent}</${prevtagname}>
-                      `;
-                  
-                  $(item).remove();
-                  $('#item-con-id-'+itemid).append(elementtoadd);
-                  $('#item-id-'+itemid).focus();   
-                  this.sethandler(itemid, prevtagname);   
-                  return false;  
-            }); 
-
-        }else{
-            $('#item-id-'+itemid).click((e)=>{
-                var item = e.currentTarget;
-                //id = $(this).attr('id');
-                textcontent = $(item).text();
-                classname = $(item).attr('class');
-                tagname = item.tagName;
-        
-                elementtoadd = `
-                        <textarea data-autoresize rows="1" type="text" id="item-id-${itemid}" data-tn="${tagname}" data-cn="${classname}">${textcontent}</textarea>
-                    `;
-
-                /*elementtoadd = `
-                    <input type="text" id="item-id-${itemid}" value="${textcontent}" data-tn="${tagname}" data-cn="${classname}">
-                `;*/
-                
-                $(item).remove();
-                $('#item-con-id-'+itemid).append(elementtoadd);
-                
-                /*var textarea = document.getElementById('item-id-'+itemid);//get the new textarea after creation
-                var offset = textarea.offsetHeight - textarea.clientHeight;
-                textarea.style.height="auto";
-                textarea.style.height = (textarea.scrollHeight + offset);*/
-
-                this.autoresize(itemid);//set the textarea to be resizeable
-                this.sethandler(itemid, "input");   
+        if(elementtype === "image"){
+            $('#item-id-'+this.itemid).mediumInsert({
+                editor: editor
             });
-        }  
+        }
+    }
+
+    setEventHandlerListener(){
+        $('#item-id-'+this.itemid).parents('li').hover(function(){
+            $(this).find('.item-close-but').css({'display':'block'});
+        },function(){
+            $(this).find('.item-close-but').css({'display':'none'});
+        });
+
+        $('#item-id-'+this.itemid).parents('li').find('.item-close-but').click((e)=>{
+            var c = e.currentTarget;
+            if(confirm('Delete this item?')){
+                $(c).parent().fadeOut('slow', (e)=>{
+                    $(c).parent().remove();
+                });
+            }     
+        });
     }
 }

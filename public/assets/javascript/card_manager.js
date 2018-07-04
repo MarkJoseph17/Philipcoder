@@ -8,18 +8,25 @@ class CardManager {
         this.theUser = theUser;
         this.courseid = courseid;
         this.classid = classid;
-        this.cardid;
 
-        let id = (new Date()).getTime().toString(36);//creates new card id
-        this.cardid = id;//Initialize card id
+        let card = (new Date()).getTime().toString(36);//creates new card id
+        this.cardid = card;//Initialize card id
 
-        console.log('The card id'+id);
+        console.log('The card id'+this.cardid);
 
-        $('.create-card-cont').append(`
-            <div id="cardid_${id}" class="class-card">
+        var cardelement = `
+        <div id="cardid_${this.cardid}" class="class-card">
                 <span class="card-close-but">
                     <i class="material-icons">close</i>
                 </span>
+                <span class="card-view-but">
+                    <i class="material-icons">view_list</i>
+                </span>
+
+                <div class="card-panel">
+                    <h5>title here..</h5>
+                    <p>description here..</p>
+                </div>
 
                 <div class="elements-items-container">
                     <div class="eic-col-1">
@@ -28,137 +35,193 @@ class CardManager {
                             Select items:                           
                                 <ul>
                                     <li>
-                                        <h1 class="dis-h1">Heading</h1>    
-                                    </li>
-                                    <li>
-                                        <p class="dis-p1">Paragraph</p> 
+                                        <img src="#" alt="Video" class="img-thumbnail btn-vid-thumbnail" style="cursor: pointer;">
                                     </li>
                                     <li>                                  
-                                      list                                     
+                                        <p class="btn-readinglist" style="cursor: pointer;">Reading list</p>                                    
                                     </li>
-                                    <li>
-                                        <img src="#" alt="Image" class="img-thumbnail">       
-                                    </li>
+                                    <!--<li>
+                                        <p class="btn-qa" style="cursor: pointer;">Question and Options</p>  
+                                    </li>-->
                                 </ul>                                                                                                                                                                                                                                     
-                            </ul>                     
+                            </ul>   
+                            <div class="btn-up">
+                                <i class="material-icons">keyboard_arrow_up</i>
+                            </div>                  
                         </div>
                     </div>          
                     <div class="eic-col-2">
                         <form>
                             <table sytle="width:100%;">
-                            <tr class="card-title-des-row">
-                                <td style="width: 30%;">
-                                    <div class="form-group">
-                                        <!--<label for="exampleFormControlInput1">Card title</label>-->
-                                        <input type="text" class="form-control card_title" id="exampleFormControlInput1" placeholder="title">
-                                    </div>
-                                </td>
-                                <td style="width: 70%;">
-                                    <div class="form-group">
-                                        <!--<label for="exampleFormControlTextarea1">Card description</label>-->
-                                        <textarea class="form-control card_des" id="exampleFormControlTextarea1" rows="1" placeholder="description"></textarea>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="btn btn-light btn-add-item" style="margin-bottom: 5px;">Add Item</div>
-                                </td>
-                            </tr>
+                                <tr class="card-title-des-row">
+                                    <td style="width: 30%; padding: 5px;">
+                                        <div class="form-group">
+                                            <!--<label for="exampleFormControlInput1">Card title</label>-->
+                                            <input type="text" class="form-control card_title" id="exampleFormControlInput1" placeholder="card title">
+                                        </div>
+                                    </td>
+                                    <td style="width: 50%; padding: 5px;">
+                                        <div class="form-group">
+                                            <!--<label for="exampleFormControlTextarea1">Card description</label>-->
+                                            <textarea class="form-control card_des" id="exampleFormControlTextarea1" rows="1" placeholder="card description"></textarea>
+                                        </div>
+                                    </td>
+                                    <td style="width: 20%; padding: 5px;">
+                                        <div class="btn btn-link btn-add-item" style="cursor: pointer;">
+                                            <span class="material-icons">add</span>
+                                            Add Item
+                                        </div>
+                                    </td>
+                                </tr>
                             </table>
                         </form>
-                        <div class="items-container">
+                        <div class="carditems-container">
                             <!-- add items here -->
                         </div>
                     </div>                   
                 </div>
             </div>
-        `);
+        `;
+        $(cardelement).appendTo('.create-card-cont').hide().show('clip');//apply clip effects 
 
-        $('#cardid_'+id).find('div.items-container').sortable({
+        $('#cardid_'+this.cardid).find('div.carditems-container').sortable({//this makes card items sortable
+            forcePlaceholderSize: true,
             update : (event, ui)=>{
-              console.log(ui.item);
-              var cardid = $(ui.item).parent('.class-card').attr('id');
-              console.log(cardid);
-              this.updatecarditems();
+              //console.log(ui.item);
+              //var cardid = $(ui.item).parent('.class-card').attr('id');
+              //console.log(cardid);
+              this.updatecarditemslist();
             }
-        });//this makes card items sortable
-
-        $('#cardid_'+id).find('.btn-add-item').click((e)=>{//add item button click event handlers
-            var c = e.currentTarget;//get the add item node object
-            $('#cardid_'+id).find(".eic-col-1").slideToggle('fast', ()=>{
-                c.innerHTML === 'Add Item' ? c.innerHTML = '<i class="material-icons">keyboard_arrow_up</i>' : c.innerHTML = 'Add Item';//dynamically change the button text node after toggle event
-            });
-            return;
-        });
-
-        $('#cardid_'+id).find('.dis-h1').click((e)=>{//heading display click event handlers
-            $('#cardid_'+id).find(".eic-col-1").slideUp('fast', ()=>{
-                $('#cardid_'+id).find('.btn-add-item').html('Add Item');//sets add item button text content back to "Add Item"
-            });
-
-            var c = e.currentTarget;      
-            new ItemManager(id, 'h1');//create new heading item
-            return;
-        });
-
-        $('#cardid_'+id).find('.dis-p1').click((e)=>{//paragraph display click event handlers
-            $('#cardid_'+id).find(".eic-col-1").slideUp('fast', ()=>{
-                $('#cardid_'+id).find('.btn-add-item').html('Add Item');//sets add item button text content back to "Add Item"
-            });
-
-            var c = e.currentTarget;        
-            new ItemManager(id, 'p1');//create new paragraph item
-            return;
-        });
-
-        $('.card-close-but').click(function(e){//set up close button event handler
-            $(this).parent().remove();//removes the current card selected
-        });
-
-
+        }).sortable('disable');//temporary disable sortable 
+        
+        this.setupButtonsEventHandlers();
     }
 
-    updatecarditems(){
-
-        if(!$('.btncreate').attr('disabled')){
-            console.log('Unable to update card items list because the class isnt saved yet');
+    setupButtonsEventHandlers(){
+        let cardid = this.cardid;
+        $('#cardid_'+cardid).find('.btn-add-item').click((e)=>{//add item button click event handlers
+            var c = e.currentTarget;//get the add item node object
+            $('#cardid_'+cardid).find(".eic-col-1").slideDown('slow', ()=>{
+                //c.innerHTML === 'Add Item' ? c.innerHTML = '<i class="material-icons">keyboard_arrow_up</i>' : c.innerHTML = 'Add Item';//dynamically change the button text node after toggle event
+                c.style.display = "none";
+            });
             return;
-        }//This cancel the update when the class hasn't submitted yet
+        });
+
+        $('#cardid_'+cardid).find('.btn-up').click((e)=>{//
+            $('#cardid_'+cardid).find(".eic-col-1").slideUp('slow', ()=>{
+                $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
+            });
+            return;
+        });
+
+        $('#cardid_'+cardid).find('.btn-vid-thumbnail').click((e)=>{//video display click event handlers
+            $('#cardid_'+cardid).find(".eic-col-1").slideUp('slow', ()=>{
+                $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
+            });
+
+            new VideoItemManager(cardid, 'videoitem');//create new video item
+            return;
+        });
+
+        $('#cardid_'+cardid).find('.btn-readinglist').click((e)=>{//reading list display click event handlers
+            $('#cardid_'+cardid).find(".eic-col-1").slideUp('slow', ()=>{
+                $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
+            });
+
+            new ReadingItemManager(cardid, 'readinglist');//create new readinglist item
+            return;
+        });
+
+        $('#cardid_'+cardid).find('.card-close-but').click(function(e){//set up close button event handler
+            if(confirm('Are you sure you want to remove this card?')){
+                $(this).parent().hide('clip', function(){//apply clip effects before it removes
+                    $(this).remove();//removes the current card selected
+                });
+            }
+            return;
+        });
+
+        $('#cardid_'+cardid).find('.card-view-but').click((e)=>{//set up view button event handler       
+            var c = e.currentTarget; 
+
+            let id = this.cardid;
+
+            if(c.firstElementChild.textContent === 'view_list'){
+                this.setcardlistTitleDes('#cardid_'+id);
+
+                $('#cardid_'+id).css({'height':'80px','cursor':'move','overflow':'hidden'});//sets all cards height to max-content
+                $('#cardid_'+id).find('.elements-items-container').css({'display':'none'});//Hides all cards contents
+                $('#cardid_'+id).find('.card-panel').css({'display':'block'});//Displays the cards panel for listview
+
+                c.firstElementChild.textContent = 'view_module';//changes the button icon to large view
+
+            }else{
+                $('#cardid_'+id).css({'height':'auto','cursor':'default','overflow':'unset'});//sets all cards height to 350 pixels (default)
+                $('#cardid_'+id).find('.elements-items-container').css({'display':'block'});//Displays all cards contents
+                $('#cardid_'+id).find('.card-panel').css({'display':'none'});//Hides the cards panel
+
+                c.firstElementChild.textContent = 'view_list';//changes the button icon to list view
+
+            }
+            this.cardeffect('#cardid_'+id);
+            return;
+        });
+    }
+
+    setcardlistTitleDes(cardid){
+
+          let card_title = $(cardid).find('.card_title').val();//card title
+          let card_des = $(cardid).find('.card_des').val();//card description
+    
+          var elements = $(cardid).find('.card-panel').children();//get reference to card panel h5(title) and p(description)
+          console.log(elements.length);
+    
+          elements[0].textContent = card_title;//set title to h5 tag
+          elements[1].textContent = card_des;//set description to paragraph tag
+    
+          if(!card_title){
+            elements[0].textContent = 'Card title here..';//set empty title to h5 tag
+          }
+          if(!card_des){
+            elements[1].textContent = 'Card description here';//set empty description to paragraph tag
+          }
+    }
+
+    cardeffect(cardid){
+        $(cardid).hide().show('clip');//apply clip effects 
+    }
+
+    updatecarditemslist(){
+
+        if(!$('.btncreate').attr('disabled') === true){
+            console.log('Unable to update, the class is not yet submitted.');
+            return;
+        }
 
         var updates = {};
-        
-        var items = $('#cardid_'+this.cardid).find('.items-container').children();//get all card items
-        var itemidlist = [];
-    
-        for(let y=0; y < items.length; y++){
-            var span_closed_but = items[y].firstElementChild;
+      
+        var carditems = $('#cardid_'+this.cardid).find('div.carditems-container').children();//get all card items
+        var carditemsidlist = [];
+      
+        for(let e=0; e < carditems.length; e++){
+            var span_closed_but = carditems[e].firstElementChild;
             var span_drag_but = span_closed_but.nextElementSibling;
             var item_el = span_drag_but.nextElementSibling;
-            var itemid = item_el.getAttribute('id');
-            var itemtagname = item_el.tagName;
-            var itemclass = item_el.getAttribute('class');
-            var itemtext = item_el.textContent;
-            var item_content = '<' + itemtagname + ' class="'+itemclass+'">' +itemtext+'</' +itemtagname+ '>';
-    
-            var iteminfo = {
-              content : item_content,
-              type : "html"
-            }
-    
-            updates['_items/' + itemid] = iteminfo;
-            itemidlist.push(itemid);
+            var carditemid = item_el.getAttribute('id');
+                
+            carditemsidlist.push(carditemid);
         }
-        updates['_card_item_list/' + 'cardid_'+this.cardid + '/items'] = itemidlist;
-        
+
+        updates['card/cardid_'+ this.cardid + '/item_list'] = carditemsidlist;      
+           
         firebase.database().ref().update(updates)
         .then(() => {
-            console.log('cards items list updated!');
+            console.log('Update succesfull!');
         }).catch((err)=>{
-          console.log(err);
-          console.log("failed to insert");
+            console.log(err);
+            console.log("failed to update");
         });
     }
-    
 }
 

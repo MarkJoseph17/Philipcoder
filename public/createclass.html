@@ -18,6 +18,15 @@
     <!-- initialize the SDK after all desired features are loaded -->
     <script defer src="/__/firebase/init.js"></script>
 
+    <!-- Font Awesome for awesome icons. You can redefine icons used in a plugin configuration -->
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.css" rel="stylesheet">
+
+    <!-- include the medium-editor and plugins -->
+    <link rel="stylesheet" href="assets/medium-editor/css/medium-editor.css">
+    <link rel="stylesheet" href="assets/medium-editor/css/themes/beagle.css">
+    <link rel="stylesheet" href="assets/medium-editor/css/plugins/medium-editor-tables.css">
+    <link rel="stylesheet" href="assets/medium-editor/css/plugins/medium-editor-insert-plugin.min.css">
+
     <!-- Bootstrap css -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
 
@@ -26,21 +35,12 @@
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
     <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script> 
 
-    <!-- Bootstrap CSS Offline  
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css"/>
-    <!-- Material Design Offline  
-	  <link rel="stylesheet" href="assets/mdl/material.min.css">
-    <script src="assets/mdl/material.min.js"></script>
-    <!-- JQuery Plugin offline
-    <script src="assets/javascript/jquery.min.js"></script>-->
-
     <!-- my custom design -->
     <link rel="stylesheet" href="assets/css/custom.css"/>
     <link rel="stylesheet" href="assets/css/createclass_custom.css"/>
-
-    <!-- inluded jquery plugin -->
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="assets/css/card.css"/>
+    <link rel="stylesheet" href="assets/css/carditem.css"/>
+    <link rel="stylesheet" href="assets/css/item.css"/>
 
   </head>
   <body>
@@ -58,7 +58,7 @@
               <a class="nav-link" href="https://philipcoder.firebaseapp.com/home.html">Home <span class="sr-only">(current)</span></a>
             </li>-->
             <li class="nav-item">
-              <a class="nav-link" href="https://philcoder-3bb4b.firebaseapp.com/course.html">Browse Courses</a>
+              <a class="nav-link" href="/course.html">Browse Courses</a>
             </li>
             <!--<li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -105,7 +105,7 @@
                   <i class="material-icons">arrow_drop_down</i>-->
               </a>
               <div class="dropdown-menu dropdown-menu-right" style="border-radius: 0px;">
-                  <a class="dropdown-item" href="https://philcoder-3bb4b.firebaseapp.com/mycourse.html">Your Courses</a>
+                  <a class="dropdown-item" href="/mycourse.html">Your Courses</a>
                   <a id="btnsignout" class="dropdown-item" href="#">Log out</a>
               </div>
           </div>
@@ -120,75 +120,8 @@
     <div class="row courseinfo-cont" style="padding-top: 20px">
         <!-- -->
     </div>
-    <div class="row" style="padding-top: 10px;">
-        <!--<div class="col-md-1"></div>-->
+    <div id="content1" class="row" style="padding-top: 10px;">
         <div class="col-md-12">
-          <!--<div class="row" style="background-color: transparent;">
-            <div class="col-lg-4" style="background-color: transparent; width: max-content;">
-              <h3 style="color: gray;">Create a new class</h3>
-              <form class="class-form" action="#">
-                <table class="createclasstable">
-                  <tr>
-                    <td>
-                      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                        <input class="mdl-textfield__input" type="text" id="txtclasstitle">
-                        <label class="mdl-textfield__label" for="sample3">Class Title...</label>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="mdl-textfield mdl-js-textfield">
-                        <textarea class="mdl-textfield__input" type="text" rows= "5" id="txtclassdes" ></textarea>
-                        <label class="mdl-textfield__label" for="sample5">Class Description...</label>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <p>Upload an image for this class.</p>
-                      <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="class-input-img">
-                        <label class="custom-file-label" for="customFile">Choose file</label>
-                      </div>
-                      <div class="prev-cont" style="display: none; margin-top: 8px;">
-                        <img id="class-img-prev-elid" src="#" alt="..." class="img-thumbnail float-right" width="320px" height="240px">
-                      </div>
-                    </td>
-                  <tr>
-                  <tr>
-                    <td>
-                      <p>Upload a video for this class.</p>
-                      <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="class-input-vid">
-                        <label class="custom-file-label" for="customFile">Choose file</label>
-                      </div>
-                      <div class="prev-cont" style="display: none; margin-top: 8px;">
-                        <video id="class-video-prev-elid" width="320" height="240" controls>
-                          <source src="#" type="video/mp4">
-                        </video>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <button type="button" class="btn btn-primary btncreate" style="padding:10px 20px 10px 20px;">Create</button>
-                    </td>
-                  </tr>
-                  <tr>
-                  </tr>
-                </table>
-              </form>
-            </div>
-            <div class="col-lg-8" style="background-color: transparent; padding: 5px;">
-              <div class="create-card-cont">
-                <button class="add-card">
-                    <i class="material-icons" style="font-size:80px; color: gainsboro;">add</i>
-                </button>
-                
-              </div>
-            </div>
-          </div>-->
           <div class="create-card-row">
             <div class="col-classform">
               <h3 style="color: gray;">Create a new class</h3>
@@ -196,24 +129,24 @@
                 <table class="createclasstable">
                   <tr>
                     <td>
-                      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
                         <input class="mdl-textfield__input" type="text" id="txtclasstitle">
-                        <label class="mdl-textfield__label" for="sample3">Class Title...</label>
+                        <label class="mdl-textfield__label" for="sample3" style="margin-bottom: 0px;">Class Title...</label>
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <td>
-                      <div class="mdl-textfield mdl-js-textfield">
+                      <div class="mdl-textfield mdl-js-textfield" style="width: 100%;">
                         <textarea class="mdl-textfield__input" type="text" rows= "2" id="txtclassdes" ></textarea>
-                        <label class="mdl-textfield__label" for="sample5">Class Description...</label>
+                        <label class="mdl-textfield__label" for="sample5" style="margin-bottom: 0px;">Class Description...</label>
                       </div>
                     </td>
                   </tr>
                   <tr>
                     <td>
                       <p>Upload an image for this class.</p>
-                      <div class="custom-file" style="width: 100%;">
+                      <div class="custom-file">
                         <input type="file" class="custom-file-input" id="class-input-img">
                         <label class="custom-file-label" for="customFile">Choose file</label>
                       </div>
@@ -248,38 +181,83 @@
             </div>
             <div class="col-cards-items">
               <div class="create-card-cont">
-                <!-- Cards appear here -->
-                
+                <!-- Cards appear here -->            
               </div>
             </div>
           </div>
         </div>
-        <!--<div class="col-md-1"></div>-->
     </div>
     <div class="row" style="padding-top: 20px">
         <!-- -->
     </div>
   </div>
 
-  <!-- Colored FAB button with ripple -->
+  <!-- Colored FAB button with ripple 
   <button id="floating-menu" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
     <i class="material-icons">add</i>
-  </button>
+  </button>-->
+
+  <div id="floating-menu" class="btn-group-vertical" role="group" aria-label="Basic example">
+      <button type="button" class="btn btn-light addcard" data-toggle="tooltip" data-placement="left" data-trigger="hover" title="Add card">
+        <i class="material-icons">add</i>
+      </button>
+      <button type="button" class="btn btn-light listview" data-toggle="tooltip" data-placement="left" data-trigger="hover" title="List view">
+        <i class="material-icons">view_list</i>
+      </button>
+      <button type="button" class="btn btn-light sortcard" data-toggle="tooltip" data-placement="left" data-trigger="hover" title="Sort cards">
+        <i class="material-icons">sort</i>
+      </button>
+      <a href="#content1" class="btn btn-light backtotop" data-toggle="tooltip" data-placement="left" data-trigger="hover" title="Back to top">
+        <i class="material-icons">arrow_upward</i>
+      </a>
+  </div>
+
+    <!-- inluded jquery plugin -->
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="assets/javascript/jquery.ui.touch-punch.min.js"></script>
 
     <!--<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
-
+    
     <script src="https://www.gstatic.com/firebasejs/5.0.2/firebase.js"></script>
+
+    
     
     <!-- included javascript -->
     <script defer src="assets/javascript/user_manager.js"></script>
     <script defer src="assets/javascript/class_manager.js"></script>
     <script defer src="assets/javascript/card_manager.js"></script>
+
+    <script defer src="assets/javascript/videoitem_manager.js"></script>
+    <script defer src="assets/javascript/readingitem_manager.js"></script>
+    <script defer src="assets/javascript/quizitem_manager.js"></script>
     <script defer src="assets/javascript/item_manager.js"></script>
+
+    <!-- handlebars -->
+    <script src="assets/handlebars/handlebars.runtime.min.js"></script>
+
+    <!-- jQuery File Upload Plugin has a few more dependencies itself -->
+    <script src="assets/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
+    <script src="assets/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
+    <script src="assets/blueimp-file-upload/js/jquery.fileupload.js"></script>
+
+    <!--include the medium-editor and plugins-->
+    <script src="assets/medium-editor/js/medium-editor.js"></script>
+    <script src="assets/medium-editor/js/plugins/medium-editor-tables.js"></script>
+    <script src="assets/medium-editor/js/plugins/medium-editor-insert-plugin.min.js"></script>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+      
+      $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        $("[data-toggle='tooltip']").on('shown.bs.tooltip', function(){
+          
+        });
+      })
+
       try {
         let app = firebase.app();
         let features = ['auth', 'database', 'messaging', 'storage'].filter(feature => typeof app[feature] === 'function');
@@ -355,7 +333,17 @@
     };
 
     $( document ).ready(function() {
-      
+      $('.backtotop').click(function(){
+        $("[data-toggle='tooltip']").tooltip('hide');//this makes tooltip refresh its text content
+      });
+
+      /*var theUser = {
+        uid : '123',
+        name: 'eduard peran'
+      }
+
+      new ClassManager(theUser, 'courseid');*/
+
     });
     </script>
   </body>
