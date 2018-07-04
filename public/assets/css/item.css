@@ -1,0 +1,115 @@
+/* item div */
+  .item-container{
+    position: relative; 
+    margin: 0px;
+  }
+  /* item div */
+
+  /* item close button css*/
+  .item-close-but{
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      display: none;
+      color: gray;
+      cursor: pointer; 
+      line-height: 70%;
+      text-align: center;
+      padding: 2px;
+      background-color: white;
+      z-index: 1000;
+  }
+  .item-close-but i{
+    font-size: 10px;  
+  }
+  .item-close-but:hover{
+      color: gainsboro;
+      background-color: #f04e4e;
+  }
+  /* item close button css*/
+
+  /* medium Editor Toolbar */
+  blockquote {
+    display: block;
+    border-left: 6px solid #df0d32;
+    padding-left: 15px;
+    font-style: italic;
+    color: #555;
+    margin: 0px;
+  }
+  blockquote::before{
+    content: none;
+  }
+  blockquote::after{
+    content: none;
+  }
+  .editable{
+    position: relative;
+    cursor: text;
+    outline: none;
+    margin: 0 0 0px 0;
+    padding: 0 0 0px 0;
+  }
+  .editable:focus {
+    outline: none;
+    border: 2px dotted #555;
+  }
+
+  /* Quiz Item css*/
+.question_answer{
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.question-menu-row{
+  display: flex;
+  flex-flow: row wrap;
+  width: 100%;
+}
+.question-col{
+  flex: 80%;
+  max-width: 80%;
+  padding: 8px;
+}
+.menu-col{
+  flex: 20%;
+  max-width: 20%;
+  padding: 8px;
+}
+.answer-row{
+  max-width: 100%;
+  padding: 8px;
+  padding-right: 25px;
+}
+.option-row{
+  max-width: 100%;
+  padding: 8px;
+  padding-right: 25px;
+}
+.option-close{
+  display: block;
+  border-radius: 50%;
+  position: absolute; 
+  top: 30%; 
+  right: -25px;
+  color: silver;
+  cursor: pointer; 
+  line-height: 70%;
+  text-align: center;
+  padding: 2px;
+  background-color: white;
+  z-index: 1000;
+}
+.option-close i{
+  font-size: 20px;  
+  font-weight: bold;
+}
+.option-close:hover{
+    color: white;
+    background-color: silver;
+}
+.add-option-row{
+  max-width: 100%;
+  padding: 8px;
+}
+/* Quiz Item css*/

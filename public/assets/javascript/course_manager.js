@@ -1,7 +1,5 @@
 "use strict";
 
-asdasdasdasd
-
 class CourseManager {
   constructor(theUser) {
     this.theUser = theUser;
@@ -52,19 +50,11 @@ class CourseManager {
       var title = h2.textContent;
       var des = tc.textContent;
 
-      //var title = $(this).parent().parent(".card-container").find(".course-title").text();
-			//var des = $(this).parent().parent(".card-container").find(".course-des").text();
-
-      var imgurl = sc.getAttribute("data-imgurl");//get the image url
-      var imgname = sc.getAttribute("data-imgname");//get the image name
       var courseid = div2.id.substr("courseid_".length);//get the course id
-      console.log(title + ":" + des + " id="+ courseid);
 
       //Put desire data to update
       $("#add-edit-dialog").find("h4").text("Modify this course");//change the title of dialog box
       $('#course-id').val(courseid);//hidden
-      $('#imgurl').val(imgurl);//hidden
-      $('#imgname').val(imgname);//hidden
       $('#course-title').val(title);
       $('#course-description').val(des.toString().trim());
 
@@ -84,11 +74,6 @@ class CourseManager {
         //});
         dialog.querySelector('.close').addEventListener('click', function() {
           dialog.close();
-          /*$('#course-id').val("");//hidden
-          $('#imgurl').val("");//hidden
-          $('#imgname').val("");//hidden
-          $('#course-title').val("");
-          $('#course-description').val("");*/
         });
 
     }).css('cursor', 'pointer');
@@ -103,7 +88,7 @@ class CourseManager {
       var title = snapshot.val().title;
       var des = snapshot.val().description;
       var imgname = snapshot.val().imagename;
-      var imgurl = snapshot.val().imageurl;
+      //var imgurl = snapshot.val().imageurl;
 
       console.log("course info: "+snapshot.val());
 
@@ -352,48 +337,52 @@ class CourseManager {
     });
   }
 
-  updateRec(courseid, imageurl, imagename){
-    if(imageurl === null){//cancel this operation when upload image failed
-      return;
-    }
-    console.log(imageurl);
-    //initialize course data to be save
-    let course = {
-      title: $('#course-title').val(),
-      description: $('#course-description').val(),
-      imageurl: imageurl,
-      imagename: imagename
-    };
+  updateRec(courseid){
 
-    // Write the new post's data simultaneously in the posts list and the user's post list.
-    var updates = {};
-    updates['courses/' + courseid] = course;
-    updates['user_course/' + this.theUser.uid + '/courses/' + courseid] = course;
+    firebase.database().ref('user_course/' + this.theUser.uid + '/courses/'+courseid).once('value').then((snapshot)=> {
+      //initialize course data to be save
+      let course = {
+        title: $('#course-title').val(),
+        description: $('#course-description').val(),
+        imageurl: snapshot.val().imageurl,
+        imagename: snapshot.val().imagename
+      };
 
-    firebase.database().ref().update(updates)
-    //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
-    .then(() => {
-      //this is for edit function it removes existing cards and changes by the new card
-      $(".flex-container #courseid_"+courseid).remove();
+      // Write the new post's data simultaneously in the posts list and the user's post list.
+      var updates = {};
+      updates['courses/' + courseid] = course;
+      updates['user_course/' + this.theUser.uid + '/courses/' + courseid] = course;
 
-      // if it works then ...
-      this.insertCourseInTable(courseid, course);
+      firebase.database().ref().update(updates)
+      //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
+      .then(() => {
+        //this is for edit function it removes existing cards and changes by the new card
+        $(".flex-container #courseid_"+courseid).remove();
 
-      this.setupDeleteHandler();
-      this.setupEditHandler();
-      this.setupEditImageHandler();
-      //this.setupTitleChangeHandler();
+        // if it works then ...
+        this.insertCourseInTable(courseid, course);
 
-      //componentHandler.upgradeElements(list.children().last());
+        this.setupDeleteHandler();
+        this.setupEditHandler();
+        this.setupEditImageHandler();
+        //this.setupTitleChangeHandler();
 
-      //get the dialog ref and closed it
-      var dialog = document.querySelector('#add-edit-dialog');
-      dialog.close();
+        //componentHandler.upgradeElements(list.children().last());
 
-    }).catch((err)=>{
-      console.log(err);
-      console.log("failed to insert");
+        //get the dialog ref and closed it
+        var dialog = document.querySelector('#add-edit-dialog');
+        dialog.close();
+
+        //again set a click event handlers for add course button because it was set to to click only once
+        $('#add-course').one("click", () => this.addCourse());
+
+      }).catch((err)=>{
+        console.log(err);
+        console.log("failed to insert");
+      });
+
     });
+    
   }
 
   addCourse() {
@@ -405,9 +394,7 @@ class CourseManager {
 
     if( $('#course-id').val() != ""){
       courseid = $('#course-id').val();
-      var imageurl = $('#imgurl').val();
-      var imagename = $('#imgname').val();
-      this.updateRec(courseid, imageurl, imagename);
+      this.updateRec(courseid);
     }else{
       // Make up our own course id
       courseid = (new Date()).getTime().toString(36);
