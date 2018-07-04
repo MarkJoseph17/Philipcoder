@@ -5,34 +5,23 @@ class ClassManager {
     console.log(theUser);
     this.theUser = theUser;
     this.courseid = courseid;
+    this.classid ;
 
     //creates new class id
     let classid = (new Date()).getTime().toString(36);
     this.classid = classid;//Initialize class id
-    $('.class-form').attr('id','classid_'+this.classid);
+    $('.class-form').attr('id','classid_'+classid);
 
-    new CardManager(this.theUser, this.courseid, this.classid);//display one card
+    new CardManager(this.theUser, this.courseid, classid);//display one card
 
-    this.setClassFormInputEventHandlers();
-    this.setFloatingMenuButtonEventHandlers();
+    $('#floating-menu').click((e)=>{
+      new CardManager(this.theUser, this.courseid, classid);
+    });
 
     $('.btncreate').click((e)=>{
       this.addclass();
-      //alert("Temporary disabled!");
     });
 
-    $('.create-card-cont').sortable({//this makes class cards sortable
-      update : (event, ui)=>{
-        this.updateclasscardslist();
-      }
-    });
-    $('.create-card-cont').sortable({
-      forcePlaceholderSize: true
-    });
-    $( ".create-card-cont" ).sortable('disable');//disable sortable
-  }
-
-  setClassFormInputEventHandlers(){
     $("#class-input-img").change((e)=> {
       this.readURL(e.currentTarget, "class-img-prev-elid");
     });
@@ -40,135 +29,18 @@ class ClassManager {
     $("#class-input-vid").change((e)=> {
       this.readURL(e.currentTarget, "class-video-prev-elid");
     });
-  }
 
-  setFloatingMenuButtonEventHandlers(){
-    $('#floating-menu button.addcard').click((e)=>{
-      new CardManager(this.theUser, this.courseid, this.classid);
-      $("[data-toggle='tooltip']").tooltip('hide');//this makes tooltip refresh its text content
-    });
-
-    $('#floating-menu button.listview').click((e)=>{
-      var c = e.currentTarget;
-
-      if(c.firstElementChild.textContent === 'view_list'){
-
-        this.setcardlistTitleDes();//this function set title and description for every card
-
-        $('.class-card').css({'height':'80px','cursor':'default','overflow':'hidden'});//sets all cards height to max-content
-        $('.elements-items-container').css({'display':'none'});//Hides all cards contents
-        $('.card-panel').css({'display':'block'});//Displays the cards panel for listview
-
-        c.firstElementChild.textContent = 'view_module';//changes the listview button icon to large view
-        c.setAttribute('data-original-title','Large view');//makes this button tooltip text to "Large view"
-
-        $('.card-view-but').children('i').text('view_module');//this makes all cards view button(beside close button) to be large view
-
-      }else{
-
-        $('.class-card').css({'height':'auto','cursor':'default','overflow':'unset'});//sets all cards height to 350 pixels (default)
-        $('.elements-items-container').css({'display':'block'});//Displays all cards contents
-        $('.card-panel').css({'display':'none'});//Hides the cards panel
-
-        c.firstElementChild.textContent = 'view_list';//changes the listview button icon to list view
-        c.setAttribute('data-original-title','List view');//makes this button tooltip text to "List view"
-
-        $('.card-view-but').children('i').text('view_list');//this makes all cards view button(beside close button) to be List view
-
+    $('.create-card-cont').sortable({
+      update : (event, ui)=>{
+        //this.printlog(ui);
+        this.updateclasscards();
       }
-
-      $("[data-toggle='tooltip']").tooltip('hide');//this makes tooltip refresh its text content
-      
-      this.cardsShowEffect();//show all card with effects
-
     });
 
-    $('#floating-menu button.sortcard').click((e)=>{
-      var c = e.currentTarget;
-
-      if(c.firstElementChild.textContent === 'sort'){
-
-        c.firstElementChild.textContent = 'done_all';//changes the sortcard button icon to done_all
-        c.setAttribute('data-original-title','Done sort');//makes this sortcard button tooltip text to "Done sort"
-
-        this.setcardlistTitleDes();//this function set title and description for every card
-
-        $('.class-card').css({'height':'80px','cursor':'move','overflow':'hidden'});//sets all cards height to max-content
-        $('.elements-items-container').css({'display':'none'});//Hides all cards contents
-        $('.card-panel').css({'display':'block'});//Displays the cards panel for listview
-
-        $('.card-view-but').css({'display':'none'});//when sorting are enable for cards we dont to allow the card to be view larger
-        $('#floating-menu button.listview').attr('disabled','true');//disable listview button
-        $('#floating-menu button.addcard').attr('disabled','true');//disable add card button
-
-        $( ".create-card-cont" )
-        .sortable('enable')//ofcourse enable the sortable feature
-        .sortable({
-            connectWith: ".create-card-cont",
-            start: function(e, ui){
-                ui.placeholder.height(ui.item.height());
-            }
-        });
-
-        this.cardsShowEffect();//show all card with effects
-
-      }else{
-
-        c.firstElementChild.textContent = 'sort';//changes the button icon to list view
-        c.setAttribute('data-original-title','Sort cards');//makes this button tooltip text to "List view"
-
-        $('.class-card').css({'cursor':'default'});//sets all cards cursor to default
-
-        $('#floating-menu button.listview')
-        .html('<i class="material-icons">view_module</i>')//changes the listview button icon to large view
-        .removeAttr("disabled")//enable the listview button
-        .attr({'data-original-title':'Large view'});//enable listview button and makes tooltip text to "Large view"
-        $('#floating-menu button.addcard').removeAttr("disabled")//enable the add card button
-        
-        $('.card-view-but')
-        .html('<i class="material-icons">view_module</i>')//this makes all cards view button(beside close button) to be large view
-        .css({'display':'block'});
-        
-        $( ".create-card-cont" ).sortable('disable');//disable sortable
-
-      }
-
-      $("[data-toggle='tooltip']").tooltip('hide');//this makes tooltip refresh its text content
-    
-    });
   }
 
   printlog(obj){
     console.log(obj);
-  }
-
-  setcardlistTitleDes(){
-    var cards = $('.create-card-cont').children();//get all cards
-    for(let i=0; i < cards.length; i++){
-      let cardid = cards[i].getAttribute('id');//get the card id
-      let card_title = $(cards[i]).find('.card_title').val();//card title
-      let card_des = $(cards[i]).find('.card_des').val();//card description
-
-      var elements = $(cards[i]).find('.card-panel').children();//get reference to card panel h5(title) and p(description)
-      console.log(elements.length);
-
-      elements[0].textContent = card_title;//set title to h5 tag
-      elements[1].textContent = card_des;//set description to paragraph tag
-
-      if(!card_title){
-        elements[0].textContent = 'Card title here..';//set empty title to h5 tag
-      }
-      if(!card_des){
-        elements[1].textContent = 'Card description here';//set empty description to paragraph tag
-      }
-    }
-  }
-
-  cardsShowEffect(){
-    var cards = $('.create-card-cont').children();//get all cards
-    for(let i=0; i < cards.length; i++){      
-      $(cards[i]).hide().show('clip');//apply clip effects 
-    }
   }
 
   readURL(input, preview_element_id) {
@@ -183,6 +55,140 @@ class ClassManager {
     }
   }
 
+  setupAdditemhandler(id){
+
+    function autoresize(itemid){
+      //creadits to the author: https://stephanwagner.me/auto-resizing-textarea
+      var offset;
+ 
+      var resizeTextarea = function(el) {
+          offset = el.offsetHeight - el.clientHeight;
+          $(el).css('height', 'auto').css('height', el.scrollHeight + offset);
+      };
+
+      $('#item-id-'+itemid).on('keyup input', function() { 
+        resizeTextarea(this); 
+      });
+    }
+
+    function addNewitem(id, newitemid, elementtype){
+        var element = null;
+        if(elementtype === "h1"){
+            element = `<h1 id="item-id-${newitemid}" class="${elementtype}">double click to edit..</h1>`;
+        }else if(elementtype === "p1"){
+            element = `<p id="item-id-${newitemid}" class="${elementtype}"> double click to edit..</p>`;
+        }
+
+        $('#cardid_'+id).children('div.items-container').append(`
+            <div id="item-con-id-${newitemid}" style="position: relative; padding: 2px; background-color: transparent;">
+              <span class="close-but">
+                <i class="material-icons">close</i>
+              </span>
+                ${element}
+            </div>
+        `);
+
+        $('.close-but').click(function(e){
+          $(this).parent().remove();
+        });
+
+        sethandler(newitemid, elementtype);
+    }
+
+    function sethandler(itemid, elementtype){
+
+        var c, id, textcontent, classname, tagname, elementtoadd;
+        
+        if(elementtype === "input"){
+            $('#item-id-'+itemid).keypress(function(e){
+              if(e.which == 13){ // the enter key code
+                  //c = e.currentTarget;
+                  //id = $(this).attr('id');
+                  //classname = $(this).attr('class');
+                  //tagname = this.tagName;
+
+                  textcontent = $(this).val();
+                  
+                  var prevtagname = this.getAttribute("data-tn").toString().toLowerCase();
+                  var prevclassname = this.getAttribute("data-cn").toString().toLowerCase();
+          
+                  elementtoadd = `
+                          <${prevtagname} id="item-id-${itemid}" class="${prevclassname}">${textcontent}</${prevtagname}>
+                      `;
+                  
+                  $(this).remove();
+                  $('#item-con-id-'+itemid).append(elementtoadd);
+                  $('#item-id-'+itemid).focus();   
+                  sethandler(itemid, prevtagname);   
+                  return false;  
+                }
+            }).focus().select(); 
+            /*$('#item-id-'+itemid).dblclick(function(e){             
+                textcontent = $(this).val();
+                  
+                var prevtagname = this.getAttribute("data-tn").toString().toLowerCase();
+                var prevclassname = this.getAttribute("data-cn").toString().toLowerCase();
+          
+                elementtoadd = `
+                        <${prevtagname} id="item-id-${itemid}" class="${prevclassname}">${textcontent}</${prevtagname}>
+                    `;
+                  
+                $(this).remove();
+                $('#item-con-id-'+itemid).append(elementtoadd);
+                $('#item-id-'+itemid).focus();   
+                sethandler(itemid, prevtagname);   
+                return false;                 
+            }).focus().select(); */
+        }else{
+            $('#item-id-'+itemid).dblclick(function(e){
+                //c = e.currentTarget;
+                //id = $(this).attr('id');
+                textcontent = $(this).text();
+                classname = $(this).attr('class');
+                tagname = this.tagName;
+        
+                elementtoadd = `
+                        <textarea data-autoresize rows="1" type="text" id="item-id-${itemid}" data-tn="${tagname}" data-cn="${classname}">${textcontent}</textarea>
+                    `;
+
+                /*elementtoadd = `
+                    <input type="text" id="item-id-${itemid}" value="${textcontent}" data-tn="${tagname}" data-cn="${classname}">
+                `;*/
+                
+                $(this).remove();
+                $('#item-con-id-'+itemid).append(elementtoadd);
+                
+                /*var textarea = document.getElementById('item-id-'+itemid);//get the new textarea after creation
+                var offset = textarea.offsetHeight - textarea.clientHeight;
+                textarea.style.height="auto";
+                textarea.style.height = (textarea.scrollHeight + offset);*/
+
+                autoresize(itemid);//set the textarea to be resizeable
+                sethandler(itemid, "input");   
+            });
+        }  
+    }
+
+    $('#cardid_'+id).children('div.items-container').sortable();//this makes card items sortable
+
+    $('#additem_'+id).on('change', function(e){
+      //var item = $(this).find("option:selected").text();
+      var c = e.currentTarget;
+      //console.log($(this).parent('.additem-row').find('textarea'));
+      //console.log($(this).parent('.additem-row').find('#textcontent_'+selectid));
+      var selecteditem = c.options[ c.selectedIndex ].value;//get the selected item 
+      //console.log("selected item " + item);
+      var newitemid = (new Date()).getTime().toString(36);//create id for an item
+      addNewitem(id, newitemid, selecteditem);
+      return;
+    });
+
+    $('.card-close-but').click(function(e){//set up close button event handler
+      $(this).parent().remove();//removes the current card selected
+    });
+
+  }
+
   uploadimagefile(classid, imagefile, callback){
     //get file
     var imagefile = imagefile;
@@ -192,7 +198,7 @@ class ClassManager {
     };
     // Points to the root reference
     var storageRef = firebase.storage().ref('class_images/'+this.courseid+'/'+classid+'/'+imagefile.name);
-    // File name 
+    // File name is 'space.jpg'
     var imagename = storageRef.name
     //Upload file
     var task = storageRef.put(imagefile, metadata);
@@ -206,41 +212,15 @@ class ClassManager {
       ()=>{
         // Upload completed successfully, now we can get the download URL
         task.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-          console.log('Image File available at', downloadURL);
+          //console.log('File available at', downloadURL);
           callback(downloadURL,imagename);
         });
       }
     );
   }
 
-  uploadvideofile(caritemdid, videofile, callback){
-    //get file
-    var videofile = videofile;
-    // Create the file metadata
-    var metadata = {
-      contentType: 'video/mp4'
-    };
-    // Points to the root reference
-    var storageRef = firebase.storage().ref('carditems_video/'+caritemdid+'/'+videofile.name);
-    // File name 
-    var videoname = storageRef.name
-    //Upload file
-    var task = storageRef.put(videofile, metadata);
-    //update progress bar
-    task.on('state_changed',
-      (snapshot) =>{
-      },
-      (err) =>{
-        console.log(err);
-      },
-      ()=>{
-        // Upload completed successfully, now we can get the download URL
-        task.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-          console.log('Video file available at', downloadURL);
-          callback(downloadURL,videoname);
-        });
-      }
-    );
+  savenewclass(imageurl,imagename){
+
   }
 
   addclass(){
@@ -248,14 +228,11 @@ class ClassManager {
     if(!$('#txtclasstitle').val()){
       alert('Class title fields cant be empty');
       $('#txtclasstitle').focus();
-      return;
     }else if(!$('#txtclassdes').val()){
       alert('Class description fields cant be empty');
       $('#txtclassdes').focus();
-      return;
     }else if(!document.querySelector('#class-input-img').files[0]){
       alert('Please provide an image for your class.');
-      return;
     }//get confirmation
 
     // Make up our own class id
@@ -269,106 +246,7 @@ class ClassManager {
         return;
       }
 
-      var updates = {};
-
-      var cardidlist = [];
-
-      var cards = $('.create-card-cont').children();//get all cards
-  
-      for(let i=0; i < cards.length; i++){
-        let cardid = cards[i].getAttribute('id');
-        let card_title = $(cards[i]).find('.card_title').val();
-        let card_des = $(cards[i]).find('.card_des').val();
-
-        var cardinfo = {
-          title : card_title,
-          description : card_des,
-          item_list : null
-        }
-        
-        cardidlist.push(cardid);//it collect all of the card id 
-
-        var carditems = $(cards[i]).find('.carditems-container').children();//get all card items
-        var carditemsidlist = [];
-
-        for(let y=0; y < carditems.length; y++){
-          var span_closed_but = carditems[y].firstElementChild;
-          var span_drag_but = span_closed_but.nextElementSibling;
-          var item_el = span_drag_but.nextElementSibling;
-          var carditemid = item_el.getAttribute('id');
-          var carditemtype = item_el.getAttribute('class');
-
-          var carditeminfo = {};
-
-          if(carditemtype === 'videoitem'){
-            //Upload video
-            //get video
-            const videofile = document.querySelector('.videoitem-input-vid').files[0];
-            this.uploadvideofile(carditemid,videofile,(downloadURL,videoname)=>{
-              carditeminfo = {
-                type : 'videoitem',
-                title: $(item_el).find('.carditem-vid-title').val(),
-                description: $(item_el).find('.carditem-vid-des').val(),
-                videoname: videoname,
-                downloadURL : downloadURL
-              }
-              updates['card_item/'+ carditemid] = carditeminfo;
-              firebase.database().ref().update(updates)
-              .then(() => {
-                console.log('New video carditem has succesfully saved!');
-                $('.btncreate').attr('disabled','true');//disable create button
-              }).catch((err)=>{
-                console.log(err);
-                console.log("failed to insert");
-              });
-            });
-
-          }else if(carditemtype === 'readinglist'){
-            var items = $(item_el).find('.items-container > ul').children();//get all card items
-            var itemsidlist = [];
-
-            for(let z=0; z < items.length; z++){
-              var editable = $(items[z]).find('.editable');
-              var itemid = $(editable[0]).attr('id');
-              var itemtype = $(editable[0]).attr('data-type');
-              var content = $(editable[0]).html();
-
-              var iteminfo = {
-                type : itemtype,
-                text : null
-              }
-
-              if(itemtype === 'image'){
-                var imgcontent = '';
-                var images = $(editable[0]).children("div.medium-insert-images")
-                for(let a=0; a < images.length; a++){
-                  var dclass = $(images[a]).attr('class');
-                  imgcontent += '<div class="' + dclass + '">' + $(images[a]).html() + '</div>';
-                }
-                iteminfo.text = imgcontent;
-              }else{
-                iteminfo.text = content;
-              }
-
-              updates['item/'+ itemid] = iteminfo;   
-
-              itemsidlist.push(itemid);
-  
-            }
-            carditeminfo = {
-              type : 'readinglist',
-              item_list: itemsidlist
-            }      
-            updates['card_item/'+ carditemid] = carditeminfo;
-          }
-          
-          carditemsidlist.push(carditemid);
-        }
-        cardinfo.item_list = carditemsidlist;
-        updates['card/'+ cardid] = cardinfo;      
-      }
-
-      //initialize class data to be save
+      //initialize course data to be save
       let classes = {
         title: $('#txtclasstitle').val(),
         description: $('#txtclassdes').val(),
@@ -376,14 +254,62 @@ class ClassManager {
         image_name: imagename,
         pulished: false,
         rating: 0,
-        howmanytimestaken: 0,
-        card_list: cardidlist
+        howmanytimestaken: 0
       };
 
-      updates['class/' + classid] = classes;
-      updates['course_class_list/' + this.courseid + '/classes/' + classid] = classes;
+      // Write the new post's data simultaneously in the posts list and the user's post list.
+      var updates = {};
+      updates['_class/' + classid] = classes;
+      updates['_course_class_list/' + this.courseid + '/classes/' + classid] = classes;
+
+      var cardidlist = [];
+
+      var cards = $('.create-card-cont').children();//get all cards
+      //console.log("cards lenght :"+cards.length);
+      for(let i=1; i < cards.length; i++){
+        let cardid = cards[i].getAttribute('id');
+        let card_title = $(cards[i]).find('.card_title').val();
+        let card_des = $(cards[i]).find('.card_des').val();
+
+        var cardinfo = {
+          title : card_title,
+          description : card_des
+        }
+
+        updates['_card/'+ cardid] = cardinfo;
+        //updates['_class_card_list/' + classid + '/cards/' + cardid] = cardinfo;
+        cardidlist.push(cardid);//it collect all of the card id 
+
+        //console.log("triggerred :" + cards.length);//prints if the cards has got access to it
+
+        var items = $(cards[i]).find('.items-container').children();//get all card items
+        var itemidlist = [];
+
+        for(let y=0; y < items.length; y++){
+          var span_closed_but = items[y].firstElementChild;
+          var span_drag_but = span_closed_but.nextElementSibling;
+          var item_el = span_drag_but.nextElementSibling;
+          var itemid = item_el.getAttribute('id');
+          var itemtagname = item_el.tagName;
+          var itemclass = item_el.getAttribute('class');
+          var itemtext = item_el.textContent;
+          var item_content = '<' + itemtagname + ' class="'+itemclass+'">' +itemtext+'</' +itemtagname+ '>';
+
+          var iteminfo = {
+            content : item_content,
+            type : "html"
+          }
+
+          updates['_items/' + itemid] = iteminfo;
+          itemidlist.push(itemid);
+        }
+        updates['_card_item_list/' + cardid + '/items'] = itemidlist;
+      }
+
+      updates['_class_card_list/' + classid + '/cards'] = cardidlist;
 
       firebase.database().ref().update(updates)
+      //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
       .then(() => {
         console.log('New class has succesfully submitted!');
         $('.btncreate').attr('disabled','true');//disable create button
@@ -394,106 +320,38 @@ class ClassManager {
     });
   }
 
-  updateclassinfo(){
+  updateclasscards(){
 
-    if(!$('.btncreate').attr('disabled') === true){
-      console.log('Unable to update, the class is not yet submitted.');
+    if(!$('.btncreate').attr('disabled')){
+      console.log('Unable to update class card list because the class isnt saved yet');
       return;
-    }
+    }//This cancel the update when the class hasn't submitted yet
 
-    if(!$('#txtclasstitle').val()){
-      alert('Class title fields cant be empty');
-      $('#txtclasstitle').focus();
-      return;
-    }else if(!$('#txtclassdes').val()){
-      alert('Class description fields cant be empty');
-      $('#txtclassdes').focus();
-      return;
-    }else if(!document.querySelector('#class-input-img').files[0]){
-      alert('Please provide an image for your class.');
-      return;
-    }//get confirmation
-
-    // get the class id
-    var classid = $('.class-form').attr('id');
-    
-    //Upload course image first
-    //get image
-    const imagefile = document.querySelector('#class-input-img').files[0];
-    this.uploadimagefile(classid, imagefile, (imageurl,imagename)=>{
-      if(imageurl === null){//cancel this operation when upload image failed
-        return;
-      }
-
-      var updates = {};
-
-      var cardidlist = [];
-
-      var cards = $('.create-card-cont').children();//get all cards
-  
-      for(let c=0; c < cards.length; c++){
-        let cardid = cards[c].getAttribute('id');
-    
-        cardidlist.push(cardid);//it collect all of the card id 
- 
-      }
-
-      //initialize class data to be save
-      let classes = {
-        title: $('#txtclasstitle').val(),
-        description: $('#txtclassdes').val(),
-        image_url: imageurl,
-        image_name: imagename,
-        pulished: false,
-        rating: 0,
-        howmanytimestaken: 0,
-        card_list: cardidlist
-      };
-
-      updates['class/' + classid] = classes;
-      updates['course_class_list/' + this.courseid + '/classes/' + classid] = classes;
-
-      firebase.database().ref().update(updates)
-      .then(() => {
-        console.log('Update succesfull!');
-      }).catch((err)=>{
-        console.log(err);
-        console.log("failed to update");
-      });
-    });
-  }
-
-  updateclasscardslist(){
-
-    if(!$('.btncreate').attr('disabled') === true){
-      console.log('Unable to update, the class is not yet submitted.');
-      return;
-    }
-
-    // get the class id
-    var classid = $('.class-form').attr('id');
-    
     var updates = {};
-
     var cardidlist = [];
-
     var cards = $('.create-card-cont').children();//get all cards
-    
-    for(let d=0; d < cards.length; d++){
-      let cardid = cards[d].getAttribute('id');
-        
+    for(let i=1; i < cards.length; i++){
+      let cardid = cards[i].getAttribute('id');
+      let card_title = $(cards[i]).find('.card_title').val();
+      let card_des = $(cards[i]).find('.card_des').val();
+
+      var cardinfo = {
+        title : card_title,
+        description : card_des
+      }
+
+      updates['_card/'+ cardid] = cardinfo;
+      //updates['_class_card_list/' + classid + '/cards/' + cardid] = cardinfo;
       cardidlist.push(cardid);//it collect all of the card id 
 
     }
-
-    updates['class/' + classid + '/card_list'] = cardidlist;
-
+    updates['_class_card_list/' + 'classid_'+this.classid + '/cards'] = cardidlist;
     firebase.database().ref().update(updates)
     .then(() => {
-      console.log('Update succesfull!');
+      console.log('class cards list updated!');
     }).catch((err)=>{
       console.log(err);
-      console.log("failed to update");
+      console.log("failed to insert");
     });
   }
 }

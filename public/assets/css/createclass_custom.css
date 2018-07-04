@@ -4,11 +4,8 @@
   position: fixed;
 	background-color: rgb(243, 247, 252);
 }
-.createclasstable{
-  width: 100%;
-}
 .createclasstable tr td{
-  padding: 10px;
+	padding: 10px;
 }
 .create-card-row{
   display: flex;
@@ -18,8 +15,8 @@
 .col-classform{
   background-color: white;
   width: max-content;
-  flex: 20%;
-  max-width: 20%;
+  flex: 30%;
+  max-width: 30%;
   height: max-content;
   box-sizing: border-box;
   padding: 10px;
@@ -28,43 +25,39 @@
 .col-cards-items{
   /*background-color: rgb(202, 238, 230);*/
   padding: 5px;
-  flex: 70%;
-  max-width: 70%;
+  flex: 60%;
+  max-width: 60%;
 }
+/*.add-card{
+	width: 100%;
+	height: 100px;
+	background-color: white;
+	margin: 10px auto;
+	border: 2px dotted gray;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.add-card:hover{
+    box-shadow: 2px 1px 1px #888888;
+}*/
 .create-card-cont{
   padding: 10px;
-  /*background-color: rgb(231, 236, 216);*/
+  /*background-color: white;*/
   position: relative;
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
   justify-content: flex-start;
 }
-
-/* floating-menu */
 #floating-menu{
   position: fixed; 
-  right: 10px; 
-  top: 200px; 
+  right: 25px; 
+  top: 155px; 
   z-index: 1;
-  border-left: 2px solid white;
 }
-.tooltip-inner {
-  background-color: #8955d7;
-  border-radius: .15rem;
-}
-.tooltip .arrow::before{
-  border-left-color: #8955d7;
-}
-#floating-menu > button:hover{
-  border-bottom: 1px solid gold;
-}
-#floating-menu:hover{
-  border-left: 2px solid gold;
-}
-/* floating-menu */
-
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 1000px) {
   .col-classform{
     flex: 100%;
     max-width: 100%;
@@ -75,12 +68,192 @@
   }
   #floating-menu{
     position: fixed; 
-    top: 80%;
-    right: 5px; 
+    top: 90%;
+    right: 10px; 
     z-index: 1;
   }
 }
+  .class-card{
+    position: relative;
+    width: 100%;
+    height: 350px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+    background-color:white;
+    overflow: auto;
+  }
 
-.custom-file-label, .form-control{/*Bootstrap*/
-  border-radius: 0%;
-}
+  /* item and display elements div */
+  .elements-items-container{
+    /*background-color: aquamarine;*/
+    width: 100%;
+    height: 100%;
+  }
+  .eic-col-1{
+    width: 100%;
+    background-color: white;
+    display: none;
+  }
+  .eic-col-2{
+    width: 100%;
+    height: max-content;
+    /*background-color: rgb(245, 229, 229);*/
+    padding: 23px;
+  }
+  /*@media screen and (max-width: 780px) {
+    .eic-col-1{
+      flex: 100%;
+      max-width: 100%;
+    }
+    .eic-col-2{
+      flex: 100%;
+      max-width: 100%;
+    }
+  }*/
+  .items-container{
+    width: 100%;
+    padding: 1px;
+    box-sizing: border-box;
+    background-color: antiquewhite;
+  }
+  .elements-container{
+    width: 100%;
+    padding: 15px;
+    padding-bottom: 0px;
+    box-sizing: border-box;
+    overflow: auto;
+    border-bottom: 1px solid gainsboro;
+  }
+  .elements-container ul li{
+    padding: 5px;
+    list-style-type: square;
+    float: left;
+    margin: 10px;
+  }
+  /* item and display elements div */
+
+  /* item div */
+  .item-container{
+    position: relative; 
+    width: 100%;
+    padding: 2px; 
+    margin: 2px;
+    background-color: white;
+    cursor: move;
+    padding-left: 20px;
+    border: 1px solid silver;
+  }
+  .item-container:hover{
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+  }
+  .items-container textarea{
+    width: 100%;
+    padding: 10px;
+    margin: 5px 5px 0px 0px;
+    box-sizing: border-box;
+    border: 3px dotted #ccc;
+    -webkit-transition: 0.5s;
+    transition: 0.5s;
+    outline: none;
+    resize: none;
+  }
+  .items-container textarea:focus {
+    border: 3px dotted #555;
+  }
+  /* item div */
+
+  /* item display */
+  .dis-h1{
+      color: red;
+      font-family: courier;
+      font-size: 250%;
+      width: max-content;
+      padding: 0px;
+      margin: 0px;
+      cursor: pointer;
+  }
+  .h1{
+      color: red;
+      font-family: courier;
+      font-size: 250%;
+      /*width: fit-content;*/
+      width: 100%;
+      padding: 0px;
+      margin: 0px;
+      cursor: text;
+  }
+  .dis-p1{
+      border: 1px solid powderblue;
+      padding: 5px;
+      cursor: pointer;
+      width: max-content;
+  }
+  .p1{
+      border: 1px solid powderblue;
+      padding: 5px;
+      /*width: fit-content;*/
+      width: 100%;
+      padding: 0px;
+      margin: 0px;
+      cursor: text;
+  }
+  .dis-ul1 li{ 
+    cursor: pointer;
+    list-style-type: square;
+  }
+  /* item display */
+
+  /* card close button css*/
+  .card-close-but{
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      color: gray;
+      cursor: pointer; 
+      line-height: 70%;
+      text-align: center;
+      padding: 2px;
+  }
+  .card-close-but i{
+    font-size: 20px;  
+  }
+  .card-close-but:hover{
+      color: gainsboro;
+      background-color: #f04e4e;
+  }
+  /* item close button css*/
+  .close-but{
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      color: gray;
+      cursor: pointer; 
+      line-height: 70%;
+      text-align: center;
+      padding: 2px;
+      background-color: gainsboro;
+      margin-left: -15px;
+  }
+  .close-but i{
+    font-size: 10px;  
+  }
+  .close-but:hover{
+      color: gainsboro;
+      background-color: #f04e4e;
+  }
+  /* drag button */
+  .drag-but{
+    position: absolute;
+    color: gray;
+    cursor: move; 
+    min-height: 100%;
+    text-align: center;
+    margin-left: -20px;
+    margin-top: -2px;
+
+    display: flex;
+    align-items: center;
+  }
+  .drag-but i{
+    font-size: 15px;  
+  }
