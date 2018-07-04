@@ -40,12 +40,12 @@ body{
 
 /* flex container */
 .add-class{
-    width: 320px;
-    height: 320px;
-    background-color: white;
-    margin: 10px;
-    border: 2px dotted gray;
-    cursor: pointer;
+width: 320px;
+height: 320px;
+background-color: white;
+margin: 10px;
+border: 2px dotted gray;
+cursor: pointer;
 }
 .add-class:hover{
     box-shadow: 2px 1px 1px #888888;
