@@ -4,9 +4,9 @@ class ViewCourseManager {
     constructor(theUser,courseid){
         this.theUser = theUser;
         this.courseid = courseid;
-
+       
         this.viewcoursesinfo(courseid);
-
+       
         // This reads the current courses from the database and
         // adds them to the UI so we can see them.
         var courseclassesRef = firebase.database().ref('_course_class_list/' + this.courseid + '/classes');
@@ -23,12 +23,12 @@ class ViewCourseManager {
         });
     }
 
-    viewcoursesinfo(courseid){
+    viewcoursesinfo(courseid) {
         var courseRef = firebase.database().ref('courses/'+courseid);
             courseRef.once('value', (snapshot) => {
 
             let course = snapshot.val();
-            this.insertCourseInfo(course);
+            //this.insertCourseInfo(course);
                 /*if (courses) {
                 for (let id in courses) {
                     let course = courses[id];
@@ -37,7 +37,7 @@ class ViewCourseManager {
                 }*/
         });
     }
-
+   
     insertCourseInfo(course) {
         var list = $('.courseinfo-cont').append(
         `<div class="col-md-1"></div>
@@ -47,7 +47,7 @@ class ViewCourseManager {
         <div class="col-md-7">
             <div id="courseid_${course.key}" class="jumbotron" style="padding:20px; border-radius: 0px; background-color: transparent;">
             <h1 class="display-4">${ course.title }</h1>
-            <p class="lead">T${ course.description }</p>
+            <p class="lead">${ course.description }</p>
             <hr class="my-4">
             <a class="btn btn-primary btn-lg btnlearnmore" href="#" role="button" style="border-radius:0px;">Learn more</a>
             </div>

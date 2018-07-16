@@ -319,6 +319,7 @@ class CourseManager {
         task.snapshot.ref.getDownloadURL().then(function(downloadURL) {
           //console.log('File available at', downloadURL);
           callback(downloadURL,name);
+          console.log(downloadURL);
         });
       }
     );
@@ -376,14 +377,14 @@ class CourseManager {
         //again set a click event handlers for add course button because it was set to to click only once
         $('#add-course').one("click", () => this.addCourse());
 
+
+
       }).catch((err)=>{
         console.log(err);
         console.log("failed to insert");
       });
-
-    });
-    
-  }
+  }); 
+}
 
   addCourse() {
     var courseid=null;

@@ -50,6 +50,39 @@ cursor: pointer;
 .add-class:hover{
     box-shadow: 2px 1px 1px #888888;
 }
+.add-book{
+    width: 320px;
+    height: 320px;
+    background-color: white;
+    margin: 10px;
+    border: 2px dotted gray;
+    cursor: pointer;
+    }
+.add-book:hover{
+    box-shadow: 2px 1px 1px #888888;
+}
+.add-character{
+    width: 320px;
+    height: 320px;
+    background-color: white;
+    margin: 10px;
+    border: 2px dotted gray;
+    cursor: pointer;
+    }
+.add-character:hover{
+    box-shadow: 2px 1px 1px #888888;
+}
+.add-chapter{
+    width: 320px;
+    height: 320px;
+    background-color: white;
+    margin: 10px;
+    border: 2px dotted gray;
+    cursor: pointer;
+    }
+.add-chapter:hover{
+    box-shadow: 2px 1px 1px #888888;
+}
 
 .flex-container{
     /*background-color: antiquewhite;*/
