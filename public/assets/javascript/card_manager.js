@@ -1,18 +1,16 @@
 "use strict";
 class CardManager {
-    constructor(theUser, courseid, classid) {
-        console.log('The user'+theUser);
-        console.log('The course id'+courseid);
-        console.log('The class id'+classid);
-
+    constructor(theUser, id = null) {
         this.theUser = theUser;
-        this.courseid = courseid;
-        this.classid = classid;
-
-        let card = (new Date()).getTime().toString(36);//creates new card id
-        this.cardid = card;//Initialize card id
-
-        console.log('The card id'+this.cardid);
+        this.cardid;
+        this.readingItemManagers = [];
+        
+        if (id) {
+            this.cardid = id;
+        } else {
+            let cardid = (new Date()).getTime().toString(36);//creates new card id
+            this.cardid = cardid;//Initialize card id
+        }
 
         var cardelement = `
         <div id="cardid_${this.cardid}" class="class-card">
@@ -40,9 +38,6 @@ class CardManager {
                                     <li>                                  
                                         <p class="btn-readinglist" style="cursor: pointer;">Reading list</p>                                    
                                     </li>
-                                    <!--<li>
-                                        <p class="btn-qa" style="cursor: pointer;">Question and Options</p>  
-                                    </li>-->
                                 </ul>                                                                                                                                                                                                                                     
                             </ul>   
                             <div class="btn-up">
@@ -97,6 +92,14 @@ class CardManager {
         this.setupButtonsEventHandlers();
     }
 
+    setTitle(text){
+        $('#cardid_'+this.cardid).find('.card_title').val(text);
+    }
+
+    setDescription(text){
+        $('#cardid_'+this.cardid).find('.card_des').val(text);
+    }
+
     setupButtonsEventHandlers(){
         let cardid = this.cardid;
         $('#cardid_'+cardid).find('.btn-add-item').click((e)=>{//add item button click event handlers
@@ -120,7 +123,7 @@ class CardManager {
                 $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
             });
 
-            new VideoItemManager(cardid, 'videoitem');//create new video item
+            new VideoItemManager(cardid);//create new video item
             return;
         });
 
@@ -128,8 +131,7 @@ class CardManager {
             $('#cardid_'+cardid).find(".eic-col-1").slideUp('slow', ()=>{
                 $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
             });
-
-            new ReadingItemManager(cardid, 'readinglist');//create new readinglist item
+            this.readingItemManagers.push(new ReadingItemManager(this.cardid));
             return;
         });
 
@@ -139,7 +141,6 @@ class CardManager {
                     $(this).remove();//removes the current card selected
                 });
             }
-            return;
         });
 
         $('#cardid_'+cardid).find('.card-view-but').click((e)=>{//set up view button event handler       
@@ -150,14 +151,14 @@ class CardManager {
             if(c.firstElementChild.textContent === 'view_list'){
                 this.setcardlistTitleDes('#cardid_'+id);
 
-                $('#cardid_'+id).css({'height':'80px','cursor':'move','overflow':'hidden'});//sets all cards height to max-content
+                $('#cardid_'+id).css({'height':'80px','overflow':'hidden'});//sets all cards height to max-content
                 $('#cardid_'+id).find('.elements-items-container').css({'display':'none'});//Hides all cards contents
                 $('#cardid_'+id).find('.card-panel').css({'display':'block'});//Displays the cards panel for listview
 
                 c.firstElementChild.textContent = 'view_module';//changes the button icon to large view
 
             }else{
-                $('#cardid_'+id).css({'height':'auto','cursor':'default','overflow':'unset'});//sets all cards height to 350 pixels (default)
+                $('#cardid_'+id).css({'height':'auto','overflow':'unset'});//sets all cards height to 350 pixels (default)
                 $('#cardid_'+id).find('.elements-items-container').css({'display':'block'});//Displays all cards contents
                 $('#cardid_'+id).find('.card-panel').css({'display':'none'});//Hides the cards panel
 
@@ -213,7 +214,7 @@ class CardManager {
             carditemsidlist.push(carditemid);
         }
 
-        updates['card/cardid_'+ this.cardid + '/item_list'] = carditemsidlist;      
+        updates['card/' + this.theUser.uid + '/' + 'cardid_'+ this.cardid + '/item_list'] = carditemsidlist;      
            
         firebase.database().ref().update(updates)
         .then(() => {

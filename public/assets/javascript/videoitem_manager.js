@@ -1,19 +1,24 @@
 "use strict";
 class VideoItemManager{
-    constructor(cardid, itemtype){
+    constructor(cardid, id = null){
         this.cardid = cardid;
-        let videoitemid = (new Date()).getTime().toString(36);//creates new item id
-        this.itemid = videoitemid;//Initialize card item id
+        this.itemid;
+
+        if(id){
+            this.itemid = id;
+        }else{
+            let videoitemid = (new Date()).getTime().toString(36);//creates new item id
+            this.itemid = videoitemid;//Initialize card item id
+        }
 
         var element = `
-                <div id="videoitem-id-${this.itemid}" class="${itemtype}">
+                <div id="videoitem-id-${this.itemid}" class="videoitem">
                     <div class="vid-col-1">
                         <video id="video-${this.itemid}" width="100%" height="max-content" controls>
                             <source src="#" type="video/mp4">
                         </video>
                     </div>
                     <div class="vid-col-2">
-                        <!-- Simple Textfield -->
                         <form action="#" style="padding: 10px;">
                             <div class="custom-file">
                                 <input type="file" class="custom-file-input videoitem-input-vid">
@@ -27,7 +32,7 @@ class VideoItemManager{
                                 <textarea class="mdl-textfield__input carditem-vid-des" type="text" rows= "3"></textarea>
                                 <label class="mdl-textfield__label" for="sample5" style="margin-bottom: 0px">Description...</label>
                             </div>
-                        </form> 
+                        </form>
                     </div>
                </div>`;
 
@@ -54,6 +59,16 @@ class VideoItemManager{
         componentHandler.upgradeElements(document.getElementById('carditem-con-id-'+this.itemid));
     }
 
+    setupDeleteHandler(){
+        $('#carditem-con-id-'+this.itemid).find('.carditem-close-but').click(function(e){//setup delete handler
+            if(confirm('Are you sure you want to remove this item?')){
+                $(this).parent().hide('clip', function(){//apply clip effects before it removes
+                    $(this).remove();//removes the current card selected
+                });
+            }
+        });
+    }
+
     readURL(input, preview_element_id) {
         if (input.files && input.files[0]) {
           var reader = new FileReader();
@@ -66,13 +81,15 @@ class VideoItemManager{
         }
     }
 
-    setupDeleteHandler(){
-        $('#carditem-con-id-'+this.itemid).find('.carditem-close-but').click(function(e){//setup delete handler
-            if(confirm('Are you sure you want to remove this item?')){
-                $(this).parent().hide('clip', function(){//apply clip effects before it removes
-                    $(this).remove();//removes the current card selected
-                });
-            }
-        });
+    setUrl(url){
+        $('#video-'+this.itemid).attr('src', url);
+    }
+
+    setTitle(title){
+        $('#videoitem-id-'+this.itemid).find('.carditem-vid-title').val(title);
+    }
+
+    setDescription(description){
+        $('#videoitem-id-'+this.itemid).find('.carditem-vid-des').text(description);
     }
 }

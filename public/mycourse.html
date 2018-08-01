@@ -91,7 +91,7 @@
                   <i class="material-icons">arrow_drop_down</i>-->
               </a>
               <div class="dropdown-menu dropdown-menu-right" style="border-radius: 0px;">
-                  <a class="dropdown-item" href="/mycourse.html">Your Courses</a>
+                  <a class="dropdown-item" href="/mycourse.html">My Courses</a>
                   <a id="btnsignout" class="dropdown-item" href="#">Log out</a>
               </div>
           </div>
@@ -134,7 +134,7 @@
                   <td>
                     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                       <input class="mdl-textfield__input" type="text" id="course-title">
-                      <label class="mdl-textfield__label" for="course-title">Couse name...</label>
+                      <label class="mdl-textfield__label" for="course-title" style="margin-bottom: 0px;">Couse name...</label>
                     </div>
                   </td>
                 </tr>
@@ -142,7 +142,7 @@
                   <td>
                     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                       <textarea class="mdl-textfield__input" rows="3" type="text" id="course-description"></textarea>
-                      <label class="mdl-textfield__label" for="course-description">Course Description...</label>
+                      <label class="mdl-textfield__label" for="course-description" style="margin-bottom: 0px;">Course Description...</label>
                     </div>
                   </td>
                 </tr>
@@ -198,17 +198,31 @@
   <!--<div class="panel">
   </div>-->
 
-  <div class="container">
-    <div class="row" style="padding-top: 20px;">
-        <div class="col-md-12">
-          <h3 style="color: gray;">Manage your Courses</h3>
-          <div+ class="flex-container" id="course-container">
-            <button id="show-dialog" type="button" class="add-class">
-                <i class="material-icons" style="font-size:80px; padding: 38%; color: gainsboro;">add</i>
-            </button>
-             <!--Content Here-->
+    <div class="container">
+      <div class="row" style="padding-top: 20px;">
+          <div class="col-sm-12">
+            <h3 style="color: gray;">My Courses</h3>
+            <div class="flex-container" id="course-container">
+              <button id="show-dialog" type="button" class="add-course-class">
+                  <i class="material-icons" style="font-size:80px; padding: 38%; color: gainsboro;">add</i>
+              </button>
+              <!--Content Here-->
+            </div>
+          </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col-sm-12">
+          <h3 style="color: gray;">My Classes</h3>
+            <div class="flex-container" id="class-container">
+              <!--<button id="btn-create-class" type="button" class="add-course-class">
+                  <i class="material-icons" style="font-size:80px; padding: 38%; color: gainsboro;">add</i>
+              </button>-->
+              <!--Content Here-->
+            </div>
           </div>
         </div>
+      </div>
     </div>
   </div>
 
@@ -240,8 +254,8 @@
             console.log(user);
 
             // Wait for the user to log in before we show the course table
-            new CourseManager(theUser);
             new UserManager(theUser);
+            new CourseManager(theUser);
 
             // User is signed in.
             var displayName = user.displayName;

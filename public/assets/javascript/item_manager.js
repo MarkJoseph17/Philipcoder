@@ -1,23 +1,29 @@
 "use strict";
 class ItemManager{
-    constructor(cardid, carditemid,  elementtype){
-        this.cardid = cardid;//also get the parent card id of this newly created reading list item, we pass it through our constructor of this class
+    constructor(carditemid,  elementtype, id = null){
         this.carditemid = carditemid;//also get the parent readinglist item id of this newly created item, we pass it through our constructor of this class
-        let newitemid = (new Date()).getTime().toString(36);//creates new item id
-        this.itemid = newitemid;//Initialize item id
+        this.itemid;
+
+        if(id){
+            this.itemid = id;
+        }else{
+            let newitemid = (new Date()).getTime().toString(36);//creates new item id
+            this.itemid = newitemid;//Initialize item id
+        }
 
         var element = null;//Initialize element 
 
         //this conditional statements filters which item type to be created
         if(elementtype === "textbox"){
-            element = `<div id="item-id-${this.itemid}" class="editable" data-type="textbox"></div>`;
+            element = `<div id="item-id-${this.itemid}" class="item editable" data-type="textbox"></div>`;
         }else if(elementtype === "table"){
-            element = `<div id="item-id-${this.itemid}" class="editable" data-type="table"></div>`;
+            element = `<div id="item-id-${this.itemid}" class="item editable" data-type="table"></div>`;
         }else if(elementtype === "list"){
-            element = `<div id="item-id-${this.itemid}" class="editable" data-type="list"></div>`;
+            element = `<div id="item-id-${this.itemid}" class="item editable" data-type="list"></div>`;
         }else if(elementtype === "image"){
-            element = `<div id="item-id-${this.itemid}" class="editable" data-type="image"></div>`;
+            element = `<div id="item-id-${this.itemid}" class="item editable" data-type="image"></div>`;
         }
+        
 
         $('#readingitem-id-'+this.carditemid).find('.items-container > ul').append(`
             <li>
@@ -101,5 +107,9 @@ class ItemManager{
                 });
             }     
         });
+    }
+
+    setTextContent(text){
+        $('#readingitem-id-'+this.carditemid).find('#item-id-'+this.itemid).html(text);
     }
 }

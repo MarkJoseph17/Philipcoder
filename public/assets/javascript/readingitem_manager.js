@@ -1,23 +1,35 @@
 "use strict";
 class ReadingItemManager{
-    constructor(cardid, itemtype){
+    constructor(cardid, codeQuestionManagers, id = null){
         this.cardid = cardid;//also get the parent card id of this newly created reading list item, we pass it through our constructor of this class
-        let readingitemid = (new Date()).getTime().toString(36);//creates new item id
-        this.itemid = readingitemid;//Initialize card item id
+        this.itemid;
+        this.codeQuestionManagers = [];
+
+        if(id){
+            this.itemid = id;
+        }else{
+            let readingitemid = (new Date()).getTime().toString(36);//creates new item id
+            this.itemid = readingitemid;//Initialize card item id
+        }
 
         //this will be the new reading list item for a card
-        var element = `<div id="readingitem-id-${this.itemid}" class="${itemtype}">
+        var element = `<div id="readingitem-id-${this.itemid}" class="readinglist">
                         <div class="contentbar">
                             <!-- Default dropleft button -->
-                            <div class="btn-group dropleft">
-                                <button type="button" class="btn btn-light" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fa fa-ellipsis-v"></i>
+                            <div class="dropleft">
+                                <!-- Right aligned menu below button -->
+                                <button id="demo-menu-lower-right-${this.itemid}" class="mdl-button mdl-js-button mdl-button--icon" style="outline: none;">
+                                    <i class="material-icons">more_vert</i>
                                 </button>
-                                <div class="dropdown-menu">
-                                    <!-- Dropdown menu links -->
-                                    <a class="dropdown-item btn-sort-items" style="cursor: pointer;">Sort items</a>
-                                    <a class="dropdown-item btn-clear-items" style="cursor: pointer;">Clear all items</a>
-                                </div>
+                                <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="demo-menu-lower-right-${this.itemid}">
+                                    <li class="mdl-menu__item">
+                                        <a class="dropdown-item btn-sort-items" style="cursor: pointer; background-color: transparent;">Sort items</a>
+                                    </li>
+                                    <li class="mdl-menu__item">
+                                        <a class="dropdown-item btn-clear-items" style="cursor: pointer; background-color: transparent;">Clear all items</a>
+                                    </li>
+                                    <!--<li disabled class="mdl-menu__item">Disabled Action</li>-->
+                                </ul>
                             </div>
                             <div class="items-container">
                                 <ul>
@@ -57,6 +69,12 @@ class ReadingItemManager{
                                         Question-Options
                                     </span>
                                 </li>
+                                <li class="btn-cq">
+                                    <span style="cursor: pointer;">
+                                    <i class="material-icons">question_answer</i>
+                                        Code Question
+                                    </span>
+                                </li>
                             </ul>
                         </div>
                       </div>`;
@@ -75,9 +93,9 @@ class ReadingItemManager{
         $(carditem).appendTo($('#cardid_'+this.cardid).find('.carditems-container')).hide().show('clip');//apply clip effects 
 
         this.setupEventHandlerListener();
-        this.ReadingitemSortableManager();
+        this.readingitemSortableManager();
 
-        // This required to make the UI look correctly by Material Design Lite
+        // This required to make the UI look correctly by Material Design Lite 
         componentHandler.upgradeElements(document.getElementById('carditem-con-id-'+this.itemid));
     }
 
@@ -141,37 +159,46 @@ class ReadingItemManager{
         $('#carditem-con-id-'+this.itemid).find('.btn-textbox').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new ItemManager(this.cardid, this.itemid, "textbox");//create new item
+                new ItemManager(this.itemid, "textbox");//create new item
             }          
         });
 
         $('#carditem-con-id-'+this.itemid).find('.btn-table').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new ItemManager(this.cardid, this.itemid, "table");//create new item
+                new ItemManager(this.itemid, "table");//create new item
             }
         });
 
         $('#carditem-con-id-'+this.itemid).find('.btn-list').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new ItemManager(this.cardid, this.itemid, "list");//create new item
+                new ItemManager(this.itemid, "list");//create new item
             }
         });
 
         $('#carditem-con-id-'+this.itemid).find('.btn-image').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new ItemManager(this.cardid, this.itemid, "image");//create new item
+                new ItemManager(this.itemid, "image");//create new item
             }
         });
 
         $('#carditem-con-id-'+this.itemid).find('.btn-qa').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new QuizItemManager(this.cardid, this.itemid, "qa");//create new Quiz item
+                new QuizItemManager(this.itemid, "qa");//create new Quiz item
             }
         });
+
+        $('#carditem-con-id-'+this.itemid).find('.btn-cq').click((e)=>{
+            var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
+            if(isDisabled){//we dont allow to insert new item when sortable is enabled
+                this.codeQuestionManagers.push(new CodeQuestionManager(this.itemid, "cq"));
+
+            }
+            //this.readingItemManagers.push(new ReadingItemManager(cardid, id));
+        }); 
 
         $('#carditem-con-id-'+this.itemid).find('.carditem-close-but').click(function(e){//setup delete handler
             if(confirm('Are you sure you want to remove this item?')){
@@ -218,7 +245,7 @@ class ReadingItemManager{
 
     //confirm disable sortable when items are empty
     confirmDisableReadingitemSortable(){
-        var itemslength = $('#readingitem-id-'+this.itemid).find('.items-container ul').children().length;
+        var itemslength = $('#readingitem-id-'+this.itemid).find('.items-container > ul').children().length;
         console.log('items length='+itemslength);
 
         if(parseInt(itemslength) <= 0){
@@ -233,7 +260,7 @@ class ReadingItemManager{
     }
 
     //This method is responsible for the sorting item feature 
-    ReadingitemSortableManager(){
+    readingitemSortableManager(){
 
         $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable({//this makes carditem items sortable
             forcePlaceholderSize: true,
@@ -245,21 +272,7 @@ class ReadingItemManager{
             }
         }).sortable('disable');//temporary disable sortable    
     }
-
-    autoresize(){
-        //creadits to the author: https://stephanwagner.me/auto-resizing-textarea
-        var offset;
-   
-        var resizeTextarea = function(el) {
-            offset = el.offsetHeight - el.clientHeight;
-            $(el).css('height', 'auto').css('height', el.scrollHeight + offset);
-        };
-  
-        $('readingitem-id-'+this.itemid).on('change', function() { 
-          resizeTextarea(this); 
-        });
-    }
-
+    
     //This method updates the items list sort order in database, we call this method when items changes the sort order
     updatereadingitemslist(){
 
@@ -280,7 +293,8 @@ class ReadingItemManager{
             itemsidlist.push(itemid);
         }
               
-        updates['card_item/readingitem-id-'+ this.itemid  +'/item_list'] = itemsidlist;      
+        updates['card_item/' + this.theUser.uid + '/readingitem-id-'+ this.itemid  +'/item_list'] = itemsidlist;
+              
                 
         firebase.database().ref().update(updates)
         .then(() => {

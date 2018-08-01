@@ -10,7 +10,7 @@ class CourseManager {
 
     // This reads the current courses from the database and
     // adds them to the UI so we can see them.
-    var courseRef = firebase.database().ref('user_course/' + this.theUser.uid + '/courses');
+    var courseRef = firebase.database().ref('course/' + this.theUser.uid);
     courseRef.once('value', (snapshot) => {
 
       let courses = snapshot.val();
@@ -21,14 +21,10 @@ class CourseManager {
         }
         // This required to make the UI look correctly by Material Design Lite
         componentHandler.upgradeElements(document.getElementById('course-container'));
-
-        // Need to setup handlers for events on the new rows
-        this.setupDeleteHandler();
-        this.setupEditHandler();
-        this.setupEditImageHandler();
-        //this.setupTitleChangeHandler();
       }
     });
+
+    this.viewclasses();
   }
 
   generateid(ref){
@@ -36,8 +32,8 @@ class CourseManager {
     return firebase.database().ref(ref).push().key;
   }
 
-  setupEditHandler() {
-    $('.edit-course').click((e) => {
+  setupEditHandler(courseid) {
+    $('#courseid_'+courseid).find('.edit-course').click((e) => {
       //console.log("triggered!");
       var a = e.currentTarget;
       var div1 = a.parentElement;
@@ -124,12 +120,7 @@ class CourseManager {
 
           // if it works then ...
           this.insertCourseInTable(courseid, course);
-
-          this.setupDeleteHandler();
-          this.setupEditHandler();
-          this.setupEditImageHandler();
-          //this.setupTitleChangeHandler();
-
+          
           //componentHandler.upgradeElements(list.children().last());
 
           //set all input fields to empty including edit id
@@ -153,8 +144,8 @@ class CourseManager {
     });
   }
 
-  setupEditImageHandler() {
-    $('.edit-option').click((e) => {
+  setupEditImageHandler(courseid) {
+    $('#courseid_'+courseid).find('.edit-option').click((e) => {
 
       //var imgurl = sc.getAttribute("data-imgurl");//get the image url
       var a = e.currentTarget;
@@ -210,8 +201,8 @@ class CourseManager {
       }
   }
 
-  setupDeleteHandler() {
-    $('.delete-course').click((e) => {
+  setupDeleteHandler(courseid) {
+    $('#courseid_'+courseid).find('.delete-course').click((e) => {
       if(this.getdeleteConfirmation()){
         //console.log("triggered!");
         var a = e.currentTarget;
@@ -252,7 +243,7 @@ class CourseManager {
   }
 
   insertCourseInTable(courseid, course) {
-      var list = $('.flex-container').append(
+      var list = $('#course-container').append(
         `<div class="demo-card-square mdl-card mdl-shadow--2dp" id="courseid_${courseid}">
             <a class="edit-option" href="#">
               <i class="material-icons">edit</i>
@@ -267,11 +258,20 @@ class CourseManager {
                 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect edit-course">
                     Update
                 </a>
-                <a style="float: right;" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect delete-course">
+                <!--<a style="float: right;" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect delete-course">
                     Delete
-                </a>
+                </a>-->
             </div>
         </div>`);
+
+        // Need to setup handlers for events on the new rows
+        //this.setupDeleteHandler(courseid);
+        this.setupEditHandler(courseid);
+        this.setupEditImageHandler(courseid);
+
+        $('courseid_'+courseid).click(function(){
+          
+        });
   }
 
   validateCourseInfo() {
@@ -319,7 +319,6 @@ class CourseManager {
         task.snapshot.ref.getDownloadURL().then(function(downloadURL) {
           //console.log('File available at', downloadURL);
           callback(downloadURL,name);
-          console.log(downloadURL);
         });
       }
     );
@@ -340,7 +339,7 @@ class CourseManager {
 
   updateRec(courseid){
 
-    firebase.database().ref('user_course/' + this.theUser.uid + '/courses/'+courseid).once('value').then((snapshot)=> {
+    firebase.database().ref('course/' + this.theUser.uid + '/'+courseid).once('value').then((snapshot)=> {
       //initialize course data to be save
       let course = {
         title: $('#course-title').val(),
@@ -351,8 +350,7 @@ class CourseManager {
 
       // Write the new post's data simultaneously in the posts list and the user's post list.
       var updates = {};
-      updates['courses/' + courseid] = course;
-      updates['user_course/' + this.theUser.uid + '/courses/' + courseid] = course;
+      updates['course/' + this.theUser.uid + '/' + courseid] = course;
 
       firebase.database().ref().update(updates)
       //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
@@ -363,11 +361,6 @@ class CourseManager {
         // if it works then ...
         this.insertCourseInTable(courseid, course);
 
-        this.setupDeleteHandler();
-        this.setupEditHandler();
-        this.setupEditImageHandler();
-        //this.setupTitleChangeHandler();
-
         //componentHandler.upgradeElements(list.children().last());
 
         //get the dialog ref and closed it
@@ -377,14 +370,14 @@ class CourseManager {
         //again set a click event handlers for add course button because it was set to to click only once
         $('#add-course').one("click", () => this.addCourse());
 
-
-
       }).catch((err)=>{
         console.log(err);
         console.log("failed to insert");
       });
-  }); 
-}
+
+    });
+    
+  }
 
   addCourse() {
     var courseid=null;
@@ -411,6 +404,7 @@ class CourseManager {
         console.log(imageurl);
         //initialize course data to be save
         let course = {
+          created_by : this.theUser.uid ,
           title: $('#course-title').val(),
           description: $('#course-description').val(),
           imageurl: imageurl,
@@ -419,22 +413,17 @@ class CourseManager {
 
         // Write the new post's data simultaneously in the posts list and the user's post list.
         var updates = {};
-        updates['courses/' + courseid] = course;
-        updates['user_course/' + this.theUser.uid + '/courses/' + courseid] = course;
+
+        updates['course/' + this.theUser.uid + '/' + courseid] = course;
 
         firebase.database().ref().update(updates)
-        //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
+        //firebase.database().ref('courses/' + this.theUser.uid + '/'+courseid).set(course)
         .then(() => {
           //this is for edit function it removes existing cards and changes by the new card
           $(".flex-container #courseid_"+courseid).remove();
 
           // if it works then ...
           this.insertCourseInTable(courseid, course);
-
-          this.setupDeleteHandler();
-          this.setupEditHandler();
-          this.setupEditImageHandler();
-          //this.setupTitleChangeHandler();
 
           //componentHandler.upgradeElements(list.children().last());
 
@@ -452,4 +441,55 @@ class CourseManager {
       });
     }
   }
+
+  viewclasses(){
+    var usercourseRef = firebase.database().ref('course/'+this.theUser.uid);
+    var classRef = firebase.database().ref('class/'+this.theUser.uid);
+
+    usercourseRef.once('value', (snapcourses) => {   
+        snapcourses.forEach((childSnapshot)=> {
+
+          var courseid = childSnapshot.key;
+          var classes = childSnapshot.val().class_list;
+
+          for(let key in classes){
+
+            var classid = key;
+            var classe = classes[key];
+
+            classRef.child(classid).once('value', (snapclass) => {
+          
+              var id = snapclass.key;
+              var classe = snapclass.val();
+
+              this.insertclasses(id, classe);
+
+            });
+            
+          };
+
+          // This required to make the UI look correctly by Material Design Lite
+          componentHandler.upgradeElements(document.getElementById('class-container'));
+
+        });
+      });
+  }
+
+  insertclasses(classid, classe){
+      var list = $('#class-container').append(
+          `<div class="demo-card-square mdl-card mdl-shadow--2dp" id="classid_${classid}">
+              <div class="mdl-card__title mdl-card--expand" data-imgname="${ classe.image_name }" data-imgurl="${ classe.image_url }" style="background: url('${ classe.image_url }'); background-position: center; background-repeat: no-repeat; background-size: cover;">
+                  <h2 class="mdl-card__title-text course-title">${ classe.title }</h2>
+              </div>
+              <div class="mdl-card__supporting-text course-des">
+              ${ classe.description }
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+                  <a href="/createclass.html?courseid=${ classe.course_id }&classid=${classid}" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect btn-update-class">
+                      Update 
+                  </a>
+              </div>
+          </div>`);
+  }
+  //class
 }

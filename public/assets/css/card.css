@@ -7,6 +7,7 @@
     background-color:white;
     overflow: auto;
     border-bottom: 4px solid white;
+    cursor: default;
   }
   .class-card:hover{
     border-bottom: 4px solid gold;

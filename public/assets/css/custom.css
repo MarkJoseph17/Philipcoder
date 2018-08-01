@@ -39,48 +39,15 @@ body{
 /* end material cards */
 
 /* flex container */
-.add-class{
-width: 320px;
-height: 320px;
-background-color: white;
-margin: 10px;
-border: 2px dotted gray;
-cursor: pointer;
-}
-.add-class:hover{
-    box-shadow: 2px 1px 1px #888888;
-}
-.add-book{
+.add-course-class, .add-book{
     width: 320px;
     height: 320px;
     background-color: white;
     margin: 10px;
     border: 2px dotted gray;
     cursor: pointer;
-    }
-.add-book:hover{
-    box-shadow: 2px 1px 1px #888888;
 }
-.add-character{
-    width: 320px;
-    height: 320px;
-    background-color: white;
-    margin: 10px;
-    border: 2px dotted gray;
-    cursor: pointer;
-    }
-.add-character:hover{
-    box-shadow: 2px 1px 1px #888888;
-}
-.add-chapter{
-    width: 320px;
-    height: 320px;
-    background-color: white;
-    margin: 10px;
-    border: 2px dotted gray;
-    cursor: pointer;
-    }
-.add-chapter:hover{
+.add-course-class:hover, .add-book:hover{
     box-shadow: 2px 1px 1px #888888;
 }
 
@@ -112,7 +79,7 @@ cursor: pointer;
     color: #f0f0f0;
     text-decoration: none;
     font-size: 15px;
-    }
-    #usermenu-dropdown:hover{
+}
+#usermenu-dropdown:hover{
     color: #888888;
-    }
+}
