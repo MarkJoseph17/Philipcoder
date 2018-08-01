@@ -1,30 +1,30 @@
 "use strict";
 
 class ClassManager {
-  constructor(theUser, courseid, readingItemManagers , id) {
+  constructor(theUser, courseid, readingItemManagers, id) {
     console.log(theUser);
-      this.theUser = theUser;
-      this.courseid = courseid;
-      this.readingItemManagers = [];
-      this.cardManagers = [];
+    this.theUser = theUser;
+    this.courseid = courseid;
+    this.readingItemManagers = [];
+    this.cardManagers = [];
 
     if(id){
       this.classid = id;
       this.UpdateClassManager(this.classid);
     }else{
       //creates new class id
-    let genclassid = (new Date()).getTime().toString(36);
+      let genclassid = (new Date()).getTime().toString(36);
       this.classid = genclassid;//Initialize class id
       this.cardManagers.push(new CardManager(this.theUser));
     }
 
     $('.class-form').attr('id','classid_'+this.classid);
 
-      this.setClassFormInputEventHandlers();
-      this.setFloatingMenuButtonEventHandlers();
+    this.setClassFormInputEventHandlers();
+    this.setFloatingMenuButtonEventHandlers();
 
     $('.btncreate').one("click", () =>{
-      this.iteminfo();
+      this.addclass();
     });
 
     $('.create-card-cont').sortable({//this makes class cards sortable
@@ -263,7 +263,8 @@ class ClassManager {
     );
   }
 
-  iteminfo(){
+  addclass(){
+
     if(!$('#txtclasstitle').val()){
       alert('Class title fields cant be empty');
       $('#txtclasstitle').focus();
@@ -379,14 +380,15 @@ class ClassManager {
                   i2++
                   question_options.push(option);
                 }
+
                 iteminfo = {
                   text : $(itemelement[0]).find('.txtquestion').val(),
                   itemtype : itemtype,
                   quiz_type : '',
                   correct_answers : correct_answers,
-                  question_options : question_options,
+                  question_options : question_options
                 }
-            
+
               }else  if (itemtype == 'cq'){
                 itemelement = $(items[z]).find('.code_question');
                 itemid = $(itemelement[0]).attr('id');
@@ -418,6 +420,7 @@ class ClassManager {
 
               }else{
                 itemelement = $(items[z]).find('.editable');
+                itemid = $(itemelement[0]).attr('id');
                 content = $(itemelement[0]).html();
                 iteminfo = {
                   text : '',
@@ -436,10 +439,10 @@ class ClassManager {
                   iteminfo.text = imgcontent;
                 }else{
                   iteminfo.text = content;
-                } 
+                }  
               }
               updates['item/' + this.theUser.uid + '/' + itemid] = iteminfo;   
-              itemsidlist.push(itemid);
+              itemsidlist.push(itemid); 
             }
 
             carditeminfo = {
@@ -484,7 +487,7 @@ class ClassManager {
       });
     });
   }
-   
+
   updateclassinfo(){
 
     if(!$('.btncreate').attr('disabled') === true){
@@ -537,7 +540,7 @@ class ClassManager {
         image_name: imagename,
         pulished: false,
         rating: 0,
-        how_many_times_taken: 0,
+        howmanytimestaken: 0,
         card_list: cardidlist,
         course_id: this.courseid
       };
@@ -546,7 +549,7 @@ class ClassManager {
       updates['course_class_list/' + this.theUser.uid + '/classes/' + classid] = classes;
 
       firebase.database().ref().update(updates)
-      .then(() => { ` `
+      .then(() => {
         console.log('Update succesfull!');
       }).catch((err)=>{
         console.log(err);
@@ -603,10 +606,6 @@ class ClassManager {
         $('#class-img-prev-elid').attr('src', classe.image_url).parent('.prev-cont').css("display","block");
         $('.action_title').text('Update Class');
         $('.btncreate').text('Update');
-        $('#htmlText').val();
-        $('#cssText').val();
-        $('#javascriptText').val();
-        $('#doit').val();
 
         class_cardidlist.forEach(cardid => {
           setcards(cardid);
@@ -625,9 +624,6 @@ class ClassManager {
         var card = new CardManager(this.theUser, id);//display one card
         card.setTitle(snapcard.val().title);
         card.setDescription(snapcard.val().description);
-        card.setHtml(snapcard.val().html);
-        card.setCss(snapcard.val().css);
-        card.setJs(snapcard.val().javascript);
 
         card_carditemlist.forEach(carditemid => {
           setcarditems(id, carditemid);
@@ -650,9 +646,6 @@ class ClassManager {
           var vdescription = snapcarditem.val().description;
           var vname = snapcarditem.val().videoname;
           var vurl = snapcarditem.val().downloadURL;
-          var vhtml = snapcarditem.val().html;
-          var vcss = snapcarditem.val().css;
-          var vjs = snapcarditem.val().js;
 
           var videoitem = new VideoItemManager(cardid, id);//create new video item
           videoitem.setTitle(vtitle);
@@ -662,8 +655,8 @@ class ClassManager {
           carditemid = snapcarditem.key;
           id = carditemid.substring(15, cardid.length);
           var readingitem_itemlist = snapcarditem.val().item_list;
-         
-          this.readingItemManagers.push(new ReadingItemManager(cardid, id));
+          new ReadingItemManager(cardid, id);//create new readinglist item
+
           readingitem_itemlist.forEach(itemid => {
             setitems(id, itemid);
           });
@@ -679,6 +672,25 @@ class ClassManager {
         var itemid = snapitem.key;
         var id = itemid.substring(8, itemid.length);
         var itemtype = snapitem.val().itemtype;
+
+        if(itemtype === 'qa'){
+
+          var quizitem = new QuizItemManager(carditemid, 'qa', id);//create new Quiz item
+
+          var correct_answers = snapitem.val().correct_answers;
+          correct_answers.forEach(answer => {
+            quizitem.addAnswer(answer.answer, answer.message);
+          });
+
+          var question_options = snapitem.val().question_options;
+          question_options.forEach(option => {
+            quizitem.addOption(option.option, option.message);
+          });
+          
+        }else{
+          var item = new ItemManager(carditemid, itemtype, id);//create new item
+          item.setTextContent(snapitem.val().text);
+        }
 
       });
 

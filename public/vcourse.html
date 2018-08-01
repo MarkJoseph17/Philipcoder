@@ -128,19 +128,6 @@
         <div class="col-md-1"></div>
     </div>
     <hr>
-    <!--<div class="row" style="padding-top: 20px; background-color: #f0f0f0;">
-      <div class="col-md-1"></div>
-      <div class="col-md-10">
-        <h3 style="color: gray;">Available books</h3>
-        <div class="flex-container" id="book-container">
-          <button type="button" class="add-book">
-              <i class="material-icons" style="font-size:80px; padding: 38%; color: gainsboro;">add</i>
-          </button>
-        </div>
-      </div>
-      <div class="col-md-1"></div>
-  </div>
-  <hr>-->
     <!--<div id="createcard" class="row" style="padding-top: 10px; padding-bottom: 50px; background-color: #f0f0f0;">
       <div class="create-card-container">
 
@@ -163,7 +150,6 @@
     <!-- included javascript -->
     <script src="assets/javascript/user_manager.js"></script>
     <script defer src="assets/javascript/viewcourse_manager.js"></script>
-    <!--<script defer src="assets/javascript/book_manager.js"></script>-->
 
     <!-- Bootstrap javascript Offline -->
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
@@ -226,13 +212,6 @@
 
             courseid = getUrlParameter("courseid");//get the courseid
             new ViewCourseManager(theUser, courseid);//this shows the title and description of course that was selected
-
-            //new BookManager(theUser, courseid);
-
-            /*$('.add-book').click(()=>{
-                location.href = "createbook.html?courseid="+courseid; //proceed to page that creates books and cards
-            });*/
-
 
           }else{
             // User is signed out.

@@ -1,4 +1,5 @@
 "use strict";
+
 class CodeQuestionManager {
     constructor(carditemid, itemtype, id = null) {
         this.carditemid = carditemid; //also get the parent readinglist item id of this newly created item, we pass it through our constructor of this class

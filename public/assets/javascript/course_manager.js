@@ -442,6 +442,24 @@ class CourseManager {
     }
   }
 
+  //class
+  /*viewclasses(){
+    // This reads the current courses from the database and
+    // adds them to the UI so we can see them.
+    var courseclassesRef = firebase.database().ref('class/' + this.theUser.uid);
+    courseclassesRef.once('value', (snapshot) => {
+        let classes = snapshot.val();
+        if (classes) {
+            for (let id in classes) {
+            let classe = classes[id];
+            this.insertclasses(id, classe);
+            }
+            // This required to make the UI look correctly by Material Design Lite
+            componentHandler.upgradeElements(document.getElementById('class-container'));
+        }
+    });
+  }*/
+
   viewclasses(){
     var usercourseRef = firebase.database().ref('course/'+this.theUser.uid);
     var classRef = firebase.database().ref('class/'+this.theUser.uid);

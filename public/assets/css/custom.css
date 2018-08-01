@@ -39,7 +39,7 @@ body{
 /* end material cards */
 
 /* flex container */
-.add-course-class, .add-book{
+.add-course-class{
     width: 320px;
     height: 320px;
     background-color: white;
@@ -47,7 +47,7 @@ body{
     border: 2px dotted gray;
     cursor: pointer;
 }
-.add-course-class:hover, .add-book:hover{
+.add-course-class:hover{
     box-shadow: 2px 1px 1px #888888;
 }
 

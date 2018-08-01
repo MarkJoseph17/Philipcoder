@@ -71,7 +71,7 @@ class ReadingItemManager{
                                 </li>
                                 <li class="btn-cq">
                                     <span style="cursor: pointer;">
-                                    <i class="material-icons">question_answer</i>
+                                        <i class="material-icons">question_answer</i>
                                         Code Question
                                     </span>
                                 </li>
@@ -93,7 +93,7 @@ class ReadingItemManager{
         $(carditem).appendTo($('#cardid_'+this.cardid).find('.carditems-container')).hide().show('clip');//apply clip effects 
 
         this.setupEventHandlerListener();
-        this.readingitemSortableManager();
+        this.ReadingitemSortableManager();
 
         // This required to make the UI look correctly by Material Design Lite 
         componentHandler.upgradeElements(document.getElementById('carditem-con-id-'+this.itemid));
@@ -195,9 +195,7 @@ class ReadingItemManager{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
                 this.codeQuestionManagers.push(new CodeQuestionManager(this.itemid, "cq"));
-
             }
-            //this.readingItemManagers.push(new ReadingItemManager(cardid, id));
         }); 
 
         $('#carditem-con-id-'+this.itemid).find('.carditem-close-but').click(function(e){//setup delete handler
@@ -260,7 +258,7 @@ class ReadingItemManager{
     }
 
     //This method is responsible for the sorting item feature 
-    readingitemSortableManager(){
+    ReadingitemSortableManager(){
 
         $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable({//this makes carditem items sortable
             forcePlaceholderSize: true,
@@ -293,8 +291,7 @@ class ReadingItemManager{
             itemsidlist.push(itemid);
         }
               
-        updates['card_item/' + this.theUser.uid + '/readingitem-id-'+ this.itemid  +'/item_list'] = itemsidlist;
-              
+        updates['card_item/' + this.theUser.uid + '/readingitem-id-'+ this.itemid  +'/item_list'] = itemsidlist;      
                 
         firebase.database().ref().update(updates)
         .then(() => {

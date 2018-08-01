@@ -23,7 +23,6 @@ class ItemManager{
         }else if(elementtype === "image"){
             element = `<div id="item-id-${this.itemid}" class="item editable" data-type="image"></div>`;
         }
-        
 
         $('#readingitem-id-'+this.carditemid).find('.items-container > ul').append(`
             <li>

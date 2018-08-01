@@ -5,9 +5,9 @@ class CardManager {
         this.cardid;
         this.readingItemManagers = [];
         
-        if (id) {
+        if(id){
             this.cardid = id;
-        } else {
+        }else{
             let cardid = (new Date()).getTime().toString(36);//creates new card id
             this.cardid = cardid;//Initialize card id
         }
@@ -131,7 +131,8 @@ class CardManager {
             $('#cardid_'+cardid).find(".eic-col-1").slideUp('slow', ()=>{
                 $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
             });
-            this.readingItemManagers.push(new ReadingItemManager(this.cardid));
+
+            this.readingItemManagers.push(new ReadingItemManager(this.cardid));//create new readinglist item
             return;
         });
 
@@ -141,6 +142,7 @@ class CardManager {
                     $(this).remove();//removes the current card selected
                 });
             }
+            return;
         });
 
         $('#cardid_'+cardid).find('.card-view-but').click((e)=>{//set up view button event handler       
