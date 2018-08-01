@@ -5,9 +5,9 @@ class ViewCourseManager {
         this.theUser = theUser;
         this.courseid = courseid;
 
-        $('.add-course-class').click(()=>{
-            location.href = "createclass.html?courseid="+this.courseid;//proceed to page that creates course class and cards
-        });
+        //$('.add-course-class').click(()=>{
+            //location.href = "createclass.html?courseid="+this.courseid;//proceed to page that creates course class and cards
+        //});
 
         // This reads the current courses from the database and
         // adds them to the UI so we can see them.
@@ -59,9 +59,11 @@ class ViewCourseManager {
                     let classid = classsnap.key;
                 
                     let classe = classsnap.val();
-                    
-                    this.insertClassInTable(classid, classe);
-                        
+
+                    if(classid && classe){
+                        this.insertClassInTable(classid, classe);
+                    }
+                              
                     // This required to make the UI look correctly by Material Design Lite
                     componentHandler.upgradeElements(document.getElementById('class-container'));
                    

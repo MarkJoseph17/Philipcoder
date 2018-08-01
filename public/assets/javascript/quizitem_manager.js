@@ -1,14 +1,19 @@
 "use strict";
 class QuizItemManager{
-    constructor(carditemid,  elementtype, id){
+    constructor(theUser, cardid, carditemid,  elementtype, id){
+        this.theUser = theUser;
+        this.cardid = cardid;//also get the parent card id of this newly created item, we pass it through our constructor of this class
         this.carditemid = carditemid;//also get the parent readinglist item id of this newly created quiz item, we pass it through our constructor of this class
         this.itemid;
+        this.type = elementtype;
         
         if(id){
             this.itemid = id;
+            setTimeout(()=>{
+                this.updatereadingitemslist();
+            }, 1000);   
         }else{
-            let quizitemid = (new Date()).getTime().toString(36);//creates new quiz item id
-            this.itemid = quizitemid;//Initialize quiz item id
+            return;
         }
 
         var element = `<div id="item-id-${this.itemid}" class="item question_answer" data-type="${elementtype}">
@@ -36,7 +41,8 @@ class QuizItemManager{
                             </dialog>-->
 
                                 <div class="mdl-textfield mdl-js-textfield" style="width: 90%;">
-                                    <input class="mdl-textfield__input txtquestion" type="text">
+                                    <!--<input class="mdl-textfield__input txtquestion" type="text">-->
+                                    <textarea class="mdl-textfield__input txtquestion" rows="1" type="text" style="box-sizing: border-box; resize: none;" data-autoresize></textarea>
                                     <label class="mdl-textfield__label" for="sample3" style="margin-bottom: 0px;">question</label>
                                 </div>
                                 <!-- Icon button -->
@@ -55,24 +61,7 @@ class QuizItemManager{
 
                         <hr>
 
-                        <div class="answer-row">
-                            <div class="answer-option-flex-cont">
-                                <span class="answer-option-close">
-                                    <i class="material-icons">delete</i>
-                                </span>
-                                <div class="answer-option-col">
-                                    <div class="mdl-textfield mdl-js-textfield" style="width: 100%;">
-                                        <input class="mdl-textfield__input txtanswer" type="text">
-                                        <label class="mdl-textfield__label" for="sample3" style="margin-bottom: 0px;">answer</label>
-                                    </div>
-                                </div>
-                                <div class="msg-col">
-                                    <div class="mdl-textfield mdl-js-textfield" style="width: 100%;">
-                                        <textarea class="mdl-textfield__input txtanswer-msg" rows="1" type="text" style="box-sizing: border-box; resize: none;" data-autoresize></textarea>
-                                        <label class="mdl-textfield__label" for="sample3" style="margin-bottom: 0px;">message</label>
-                                    </div>
-                                </div>
-                            </div>  
+                        <div class="answer-row"> 
                             <!-- new answer appear here -->         
                         </div>
                         <div class="add-answer-row">
@@ -84,23 +73,6 @@ class QuizItemManager{
                         <hr>
 
                         <div class="option-row">
-                            <div class="answer-option-flex-cont">
-                                <span class="answer-option-close">
-                                    <i class="material-icons">delete</i>
-                                </span>
-                                <div class="answer-option-col">
-                                    <div class="mdl-textfield mdl-js-textfield" style="width: 100%;">
-                                        <input class="mdl-textfield__input txtoption" type="text">
-                                        <label class="mdl-textfield__label" for="sample3" style="margin-bottom: 0px;">option</label>
-                                    </div>
-                                </div>
-                                <div class="msg-col">
-                                    <div class="mdl-textfield mdl-js-textfield" style="width: 100%;">
-                                        <textarea class="mdl-textfield__input txtoption-msg" rows="1" type="text" style="box-sizing: border-box; resize: none;" data-autoresize></textarea>
-                                        <label class="mdl-textfield__label" for="sample3" style="margin-bottom: 0px;">message</label>
-                                    </div>
-                                </div>
-                            </div> 
                             <!-- new option appear here -->                                               
                         </div>  
                         <div class="add-option-row">
@@ -127,7 +99,7 @@ class QuizItemManager{
         $('#item-id-'+this.itemid).focus();
 
         this.setEventHandlerListener();
-
+       
         // This required to make the UI look correctly by Material Design Lite
         componentHandler.upgradeElements(document.getElementById('item-id-'+this.itemid));
     }
@@ -157,6 +129,7 @@ class QuizItemManager{
             if(confirm('Delete this item?')){
                 $(c).parent().fadeOut('slow', (e)=>{
                     $(c).parent().remove();
+                    this.deleteItem();
                 });
             }     
         });
@@ -167,6 +140,10 @@ class QuizItemManager{
 
         $('#item-id-'+this.itemid).find('.addoption').click(()=>{
             this.addOption();
+        });
+
+        $('#item-id-'+this.itemid).find('.txtquestion').change((e)=>{
+            this.saveItem('text', $(e.currentTarget).val());
         });
 
         this.setOptionClosedClickEventListener();
@@ -201,15 +178,59 @@ class QuizItemManager{
     }
 
     setOptionClosedClickEventListener(){
-        $('#item-id-'+this.itemid).find('.answer-option-close').click(function(){
-            $(this).parent('.answer-option-flex-cont').fadeOut(function(){
-                $(this).parent('.answer-option-flex-cont').remove();
+        $('#item-id-'+this.itemid).find('.answer-option-close').click((e)=>{
+            var fieldType = $(e.currentTarget).parent('.answer-option-flex-cont').attr('data-type');
+            $(e.currentTarget).parent('.answer-option-flex-cont').fadeOut(()=>{
+                $(e.currentTarget).parent('.answer-option-flex-cont').remove();
+                this.setItemValue(fieldType);
             });
         });
     }
 
-    addAnswer(text = null, msg = null){
-        var option =`<div class="answer-option-flex-cont">
+    updatereadingitemslist(){
+
+        var updates = {};
+  
+        var itemsidlist = [], items = $('#readingitem-id-'+this.carditemid).find('div.items-container ul').children();//get all card items
+        if(items.length > 0){
+            for(let b=0; b < items.length; b++){
+                var editable = $(items[b]).find('.item');
+                var itemid = $(editable[0]).attr('id');
+                if(itemid){
+                    itemsidlist.push(itemid);
+                }            
+            }        
+            updates['card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-'+ this.carditemid  +'/item_list'] = itemsidlist;
+        }else{
+            updates['card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-'+ this.carditemid  +'/item_list'] = null;
+        }   
+                
+        firebase.database().ref().update(updates)
+        .then(() => {
+          console.log('Reading item list Updated succesfull!');
+        }).catch((err)=>{
+          console.log(err);
+          console.log("failed to update");
+        });
+    }
+
+    addQuestion(intext){
+        $('#item-id-'+this.itemid).find('.txtquestion').text(intext);
+    }
+
+    addAnswer(intext, inMsg){
+
+        var text, msg;
+
+        if(intext == undefined && inMsg == undefined){
+            text = '';
+            msg = '';
+        }else{
+            text = intext;
+            msg = inMsg;
+        }
+
+        var answer =`<div class="answer-option-flex-cont" data-type="correct_answers">
                             <span class="answer-option-close">
                                 <i class="material-icons">delete</i>
                             </span>
@@ -226,16 +247,36 @@ class QuizItemManager{
                                 </div>
                             </div>
                         </div> `;
-            $(option).appendTo($('#item-id-'+this.itemid).find('.answer-row')).hide().show('fadein');//apply fadein effects 
+            $(answer).appendTo($('#item-id-'+this.itemid).find('.answer-row')).hide().show('fadein');//apply fadein effects 
     
             this.setOptionClosedClickEventListener();
             this.autoresizeTextarea();
+
+            $('#item-id-'+this.itemid).find('.txtanswer').change((e)=>{
+                this.setItemValue('correct_answers', $(e.currentTarget).val());
+            });
+
+            $('#item-id-'+this.itemid).find('.txtanswer-msg').change((e)=>{
+                this.setItemValue('correct_answers', $(e.currentTarget).val());
+            });
+
             // This required to make the UI look correctly by Material Design Lite
             componentHandler.upgradeElements(document.getElementById('item-id-'+this.itemid));
     }
 
-    addOption(text = null, msg = null){
-        var option =`<div class="answer-option-flex-cont">
+    addOption(intext, inMsg){
+
+        var text, msg;
+
+        if(intext == undefined && inMsg == undefined){
+            text = '';
+            msg = '';
+        }else{
+            text = intext;
+            msg = inMsg;
+        }
+        
+        var option =`<div class="answer-option-flex-cont" data-type="question_options">
                             <span class="answer-option-close">
                                 <i class="material-icons">delete</i>
                             </span>
@@ -256,7 +297,89 @@ class QuizItemManager{
     
             this.setOptionClosedClickEventListener();
             this.autoresizeTextarea();
+
+            $('#item-id-'+this.itemid).find('.txtoption').change((e)=>{
+                this.setItemValue('question_options', $(e.currentTarget).val());
+            });
+
+            $('#item-id-'+this.itemid).find('.txtoption-msg').change((e)=>{
+                this.setItemValue('question_options', $(e.currentTarget).val());
+            });
+
             // This required to make the UI look correctly by Material Design Lite
             componentHandler.upgradeElements(document.getElementById('item-id-'+this.itemid));
+    }
+
+    saveItem(fields, value){
+
+        var updates = {};
+ 
+        updates['item/' + this.theUser.uid + '/readingitem-id-' + this.carditemid +  '/item-id-' + this.itemid + '/'+fields+'/'] = value;
+
+        firebase.database().ref().update(updates)
+        .then(() => {     
+            console.log('Item saved');
+        }).catch((err)=>{
+            console.log(err);  
+        });
+    }
+
+    setItemValue(fieldType){
+
+        var listValues = [];
+
+        var values, txtcontent, txtmsg;
+
+        if(fieldType == 'correct_answers'){
+            values = $('#item-id-'+this.itemid).find('.answer-row').children();
+            txtcontent = '.txtanswer';
+            txtmsg = '.txtanswer-msg';
+        }else{
+            values = $('#item-id-'+this.itemid).find('.option-row').children();
+            txtcontent = '.txtoption';
+            txtmsg = '.txtoption-msg';
+        }
+
+        let i=0;
+        while( i < values.length){
+          var value = {
+            textcontent : $(values[i]).find(txtcontent).val(),
+            message : $(values[i]).find(txtmsg).val()
+          }
+          i++
+          listValues.push(value);
+        }
+        this.saveItem(fieldType, listValues);
+    }
+
+    deleteItem(){
+        
+        firebase.database().ref('item/' + this.theUser.uid + '/readingitem-id-' + this.carditemid +  '/item-id-' + this.itemid).update({'isDeleted':true})
+        .then(() => {   
+            console.log('Item Deleted');
+            this.showUndoSnackBar();
+        }).catch((err)=>{
+          console.log(err);  
+        }); 
+    }
+
+    showUndoSnackBar(){
+        var snackbarContainer = document.querySelector('.mdl-snackbar');
+
+        var handler = (event)=> {
+            firebase.database().ref('item/' + this.theUser.uid + '/readingitem-id-' + this.carditemid +  '/item-id-' + this.itemid).update({'isDeleted':false})
+            .then(() => {   
+            }).catch((err)=>{
+                console.log(err);  
+            }); 
+        };
+
+        var data = {
+            message: 'Quiz item deleted',
+            timeout: 5000,
+            actionHandler: handler,
+            actionText: 'Undo'
+        };
+        snackbarContainer.MaterialSnackbar.showSnackbar(data);
     }
 }

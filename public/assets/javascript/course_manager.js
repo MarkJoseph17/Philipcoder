@@ -11,8 +11,7 @@ class CourseManager {
     // This reads the current courses from the database and
     // adds them to the UI so we can see them.
     var courseRef = firebase.database().ref('course/' + this.theUser.uid);
-    courseRef.once('value', (snapshot) => {
-
+    /*courseRef.once('value', (snapshot) => {
       let courses = snapshot.val();
       if (courses) {
         for (let id in courses) {
@@ -22,6 +21,24 @@ class CourseManager {
         // This required to make the UI look correctly by Material Design Lite
         componentHandler.upgradeElements(document.getElementById('course-container'));
       }
+    });*/
+
+    courseRef.on('child_added', (data)=>{
+      this.insertCourseInTable(data.key, data.val());
+      // This required to make the UI look correctly by Material Design Lite
+      componentHandler.upgradeElements(document.getElementById('course-container'));
+    });
+
+    courseRef.on('child_changed', (data)=> {
+      this.insertCourseInTable(data.key, data.val());
+      // This required to make the UI look correctly by Material Design Lite
+      componentHandler.upgradeElements(document.getElementById('course-container'));
+    });
+
+    courseRef.on('child_removed', (data)=> {
+      this.insertCourseInTable(data.key, data.val());
+      // This required to make the UI look correctly by Material Design Lite
+      componentHandler.upgradeElements(document.getElementById('course-container'));
     });
 
     this.viewclasses();
@@ -60,6 +77,8 @@ class CourseManager {
        $('.formupload')[0].reset();
        $('.formupload').css("display","none");
 
+       this.formatProgressBar();
+
       var dialog = document.querySelector('#add-edit-dialog');
         //var showDialogButton = document.querySelector('.show-dialog');
         if (! dialog.showModal) {
@@ -76,82 +95,60 @@ class CourseManager {
   }
 
   editCourseimage(){
-    var courseid = $('#course-id-edit-image').val();
+    var courseid = $('#course-info').attr('data-courseid');
+    var imgname = $('#course-info').attr('data-imgname');
 
-    firebase.database().ref('user_course/' + this.theUser.uid + '/courses/'+courseid).once('value').then((snapshot)=> {
-      //var username = (snapshot.val() && snapshot.val().username) || 'Anonymous';
-      // ...
-      var title = snapshot.val().title;
-      var des = snapshot.val().description;
-      var imgname = snapshot.val().imagename;
-      //var imgurl = snapshot.val().imageurl;
+    this.deleteimage(courseid,imgname);
 
-      console.log("course info: "+snapshot.val());
+    //Upload course image first
+    //get image
+    const imagefile = document.querySelector('#editimagefile').files[0];
+    this.uploadimage('update', imagefile, courseid, (imageurl,imagename)=>{
+      if(imageurl === null){//cancel this operation when upload image failed
+        return;
+      }
+     
+      // Write the new post's data simultaneously in the posts list and the user's post list.
+      var updates = {};
+      updates['course/' + this.theUser.uid + '/' + courseid + '/imageurl/'] = imageurl;
+      updates['course/' + this.theUser.uid + '/' + courseid + '/imagename/'] = imagename;
 
-      this.deleteimage(courseid,imgname);
+      firebase.database().ref().update(updates)
+      //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
+      .then(() => {   
+        //componentHandler.upgradeElements(list.children().last());
 
-      //Upload course image first
-      //get image
-      const imagefile = document.querySelector('#editimagefile').files[0];
-      this.uploadimage(imagefile, courseid, (imageurl,imagename)=>{
-        if(imageurl === null){//cancel this operation when upload image failed
-          return;
-        }
-        console.log(imageurl);
-        //initialize course data to be save
-        let course = {
-          title: title,
-          description: des,
-          imageurl: imageurl,
-          imagename:imagename
-        };
+        //set all input fields to empty including edit id
+        $('#course-info').attr('data-courseid', '');
+        $('#course-info').attr('data-imgname', '');
+        $('#editimagepreview').attr('src', "#");
+        $('.form-edit-image')[0].reset();
 
-        // Write the new post's data simultaneously in the posts list and the user's post list.
-        var updates = {};
-        updates['courses/' + courseid] = course;
-        updates['user_course/' + this.theUser.uid + '/courses/' + courseid] = course;
+        //get the dialog ref and closed it
+        var dialog = document.querySelector('#edit-image-dialog');
+        dialog.close();
 
-        firebase.database().ref().update(updates)
-        //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
-        .then(() => {
-          // We want to make sure we update the UI only if firebase succeeds
-          //this is for edit function it removes existing cards and changes by the new card
-          $(".flex-container #courseid_"+courseid).remove();
+        //again set a click event handlers for edit image course button because it was set to to click only once
+        $('#edit-course-image').one("click", () =>this.editCourseimage());
 
-          // if it works then ...
-          this.insertCourseInTable(courseid, course);
-          
-          //componentHandler.upgradeElements(list.children().last());
-
-          //set all input fields to empty including edit id
-          $('#course-id-edit-image').val('');
-          $('#editimagepreview').attr('src', "#");
-          $('.form-edit-image')[0].reset();
-
-          //get the dialog ref and closed it
-          var dialog = document.querySelector('#edit-image-dialog');
-          dialog.close();
-
-          //again set a click event handlers for edit image course button because it was set to to click only once
-          $('#edit-course-image').one("click", () =>this.editCourseimage());
-
-        }).catch((err)=>{
-          console.log(err);
-          console.log("failed to insert");
-        });
+      }).catch((err)=>{
+        console.log(err);
+        console.log("failed to insert");
       });
-
     });
   }
 
   setupEditImageHandler(courseid) {
     $('#courseid_'+courseid).find('.edit-option').click((e) => {
 
+      this.formatProgressBar();
+
       //var imgurl = sc.getAttribute("data-imgurl");//get the image url
       var a = e.currentTarget;
       var p = a.parentElement;
       var imagecont = a.nextElementSibling;
       var imgurl = imagecont.getAttribute("data-imgurl");//get the image url
+      var imgname = imagecont.getAttribute("data-imgname");//get the image name
       var courseid = p.id.substr("courseid_".length);//get the course id
 
       //Dialog box for editing course image
@@ -161,13 +158,15 @@ class CourseManager {
         dialogPolyfill.registerDialog(dialog);
       }
       //showDialogButton.addEventListener('click', function() {
-        $('#course-id-edit-image').val(courseid);
+        $('#course-info').attr('data-courseid', courseid);
+        $('#course-info').attr('data-imgname', imgname);
         $('#editimagepreview').attr('src', imgurl);
         dialog.showModal();
       //});
       dialog.querySelector('.close').addEventListener('click', function() {
         dialog.close();
-        $('#course-id-edit-image').val('');
+        $('#course-info').attr('data-courseid', '');
+        $('#course-info').attr('data-imgname', '');
         $('#editimagepreview').attr('src', "#");
         $('.form-edit-image')[0].reset();
       });
@@ -243,6 +242,11 @@ class CourseManager {
   }
 
   insertCourseInTable(courseid, course) {
+
+    // We want to make sure we update the UI only if firebase succeeds
+    //this is for edit function it removes existing cards and changes by the new card
+    $(".flex-container #courseid_"+courseid).remove();
+
       var list = $('#course-container').append(
         `<div class="demo-card-square mdl-card mdl-shadow--2dp" id="courseid_${courseid}">
             <a class="edit-option" href="#">
@@ -261,6 +265,9 @@ class CourseManager {
                 <!--<a style="float: right;" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect delete-course">
                     Delete
                 </a>-->
+                <a style="float: right;" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect create-class" href="createclass.html?courseid=${courseid}">
+                    Create Class
+                </a>
             </div>
         </div>`);
 
@@ -289,7 +296,35 @@ class CourseManager {
     return true;
   }
 
-  uploadimage(imagefile, courseid , callback){
+  setProgressBarPercentage(el, percentage){
+    var progressbar = document.getElementById(el);
+    progressbar.style.width = percentage + '%';
+    //progressbar.textContent = percentage + '%';
+    progressbar.setAttribute('aria-valuenow', percentage);
+  }
+
+  formatProgressBar(){
+    var p1 = document.getElementById('p1');
+    p1.style.width = '0%';
+    p1.setAttribute('aria-valuenow', 0);
+
+    var p2 = document.getElementById('p2');
+    p2.style.width = '0%';
+    p2.setAttribute('aria-valuenow', 0);
+  }
+
+  uploadimage(action, imagefile, courseid , callback){
+
+    var el;
+
+    if(action == 'add'){
+      el = 'p1';
+    }else{
+      el = 'p2';
+    }
+
+    var percentage = 0 ;
+
     //get file
     var file = imagefile;
     // Create the file metadata
@@ -310,6 +345,8 @@ class CourseManager {
 
     task.on('state_changed',
       (snapshot) =>{
+        percentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;   
+        this.setProgressBarPercentage(el, percentage);
       },
       (err) =>{
         console.log(err);
@@ -339,44 +376,29 @@ class CourseManager {
 
   updateRec(courseid){
 
-    firebase.database().ref('course/' + this.theUser.uid + '/'+courseid).once('value').then((snapshot)=> {
-      //initialize course data to be save
-      let course = {
-        title: $('#course-title').val(),
-        description: $('#course-description').val(),
-        imageurl: snapshot.val().imageurl,
-        imagename: snapshot.val().imagename
-      };
+    // Write the new post's data simultaneously in the posts list and the user's post list.
+    var updates = {};
+    updates['course/' + this.theUser.uid + '/' + courseid + '/title/'] = $('#course-title').val();
+    updates['course/' + this.theUser.uid + '/' + courseid + '/description/'] = $('#course-description').val();
 
-      // Write the new post's data simultaneously in the posts list and the user's post list.
-      var updates = {};
-      updates['course/' + this.theUser.uid + '/' + courseid] = course;
+    firebase.database().ref().update(updates)
+    //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
+    .then(() => {
 
-      firebase.database().ref().update(updates)
-      //firebase.database().ref('users/' + this.theUser.uid + '/courses/'+id).set(course)
-      .then(() => {
-        //this is for edit function it removes existing cards and changes by the new card
-        $(".flex-container #courseid_"+courseid).remove();
+      //componentHandler.upgradeElements(list.children().last());
 
-        // if it works then ...
-        this.insertCourseInTable(courseid, course);
+      //get the dialog ref and closed it
+      var dialog = document.querySelector('#add-edit-dialog');
+      dialog.close();
 
-        //componentHandler.upgradeElements(list.children().last());
+      //again set a click event handlers for add course button because it was set to to click only once
+      $('#add-course').one("click", () => this.addCourse());
 
-        //get the dialog ref and closed it
-        var dialog = document.querySelector('#add-edit-dialog');
-        dialog.close();
-
-        //again set a click event handlers for add course button because it was set to to click only once
-        $('#add-course').one("click", () => this.addCourse());
-
-      }).catch((err)=>{
-        console.log(err);
-        console.log("failed to insert");
-      });
-
+    }).catch((err)=>{
+      console.log(err);
+      console.log("failed to insert");
     });
-    
+
   }
 
   addCourse() {
@@ -397,7 +419,7 @@ class CourseManager {
       //Upload course image first
       //get image
       const imagefile = document.querySelector('#imagefile').files[0];
-      this.uploadimage(imagefile, courseid, (imageurl,imagename)=>{
+      this.uploadimage('add', imagefile, courseid, (imageurl,imagename)=>{
         if(imageurl === null){//cancel this operation when upload image failed
           return;
         }
@@ -419,13 +441,6 @@ class CourseManager {
         firebase.database().ref().update(updates)
         //firebase.database().ref('courses/' + this.theUser.uid + '/'+courseid).set(course)
         .then(() => {
-          //this is for edit function it removes existing cards and changes by the new card
-          $(".flex-container #courseid_"+courseid).remove();
-
-          // if it works then ...
-          this.insertCourseInTable(courseid, course);
-
-          //componentHandler.upgradeElements(list.children().last());
 
           //get the dialog ref and closed it
           var dialog = document.querySelector('#add-edit-dialog');
@@ -480,7 +495,9 @@ class CourseManager {
               var id = snapclass.key;
               var classe = snapclass.val();
 
-              this.insertclasses(id, classe);
+              if(id && classe){
+                this.insertclasses(id, classe);
+              }      
 
             });
             

@@ -1,15 +1,17 @@
 "use strict";
 class ReadingItemManager{
-    constructor(cardid, codeQuestionManagers, id = null){
+    constructor(theUser, cardid, id = null){
+        this.theUser = theUser;
         this.cardid = cardid;//also get the parent card id of this newly created reading list item, we pass it through our constructor of this class
         this.itemid;
-        this.codeQuestionManagers = [];
 
         if(id){
             this.itemid = id;
+            setTimeout(()=>{
+                this.updatecarditemslist();
+            }, 1000);   
         }else{
-            let readingitemid = (new Date()).getTime().toString(36);//creates new item id
-            this.itemid = readingitemid;//Initialize card item id
+            return;
         }
 
         //this will be the new reading list item for a card
@@ -67,12 +69,6 @@ class ReadingItemManager{
                                     <span style="cursor: pointer;">
                                         <i class="material-icons">question_answer</i>
                                         Question-Options
-                                    </span>
-                                </li>
-                                <li class="btn-cq">
-                                    <span style="cursor: pointer;">
-                                        <i class="material-icons">question_answer</i>
-                                        Code Question
                                     </span>
                                 </li>
                             </ul>
@@ -159,61 +155,67 @@ class ReadingItemManager{
         $('#carditem-con-id-'+this.itemid).find('.btn-textbox').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new ItemManager(this.itemid, "textbox");//create new item
+                //new ItemManager(this.theUser, this.itemid, "textbox");//create new item
+                this.saveItem('textbox');//create new item
             }          
         });
 
         $('#carditem-con-id-'+this.itemid).find('.btn-table').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new ItemManager(this.itemid, "table");//create new item
+                this.saveItem('table');//create new item
             }
         });
 
         $('#carditem-con-id-'+this.itemid).find('.btn-list').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new ItemManager(this.itemid, "list");//create new item
+                this.saveItem('list');//create new item
             }
         });
 
         $('#carditem-con-id-'+this.itemid).find('.btn-image').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new ItemManager(this.itemid, "image");//create new item
+                this.saveItem('image');//create new item
             }
         });
 
         $('#carditem-con-id-'+this.itemid).find('.btn-qa').click((e)=>{
             var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
             if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                new QuizItemManager(this.itemid, "qa");//create new Quiz item
+                this.saveItem('qa');//create new item
             }
         });
 
-        $('#carditem-con-id-'+this.itemid).find('.btn-cq').click((e)=>{
-            var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
-            if(isDisabled){//we dont allow to insert new item when sortable is enabled
-                this.codeQuestionManagers.push(new CodeQuestionManager(this.itemid, "cq"));
-            }
-        }); 
-
-        $('#carditem-con-id-'+this.itemid).find('.carditem-close-but').click(function(e){//setup delete handler
-            if(confirm('Are you sure you want to remove this item?')){
-                $(this).parent().hide('clip', function(){//apply clip effects before it removes
-                    $(this).remove();//removes the current card item (reading list) selected
-                });
+        $('#carditem-con-id-'+this.itemid).find('.carditem-close-but').click((e)=>{//setup delete handler
+            var c = e.currentTarget;
+            if(confirm('Are you sure you want to remove this item?')){   
+                this.deleteReadingItem();
             }
         });
 
         this.setItemsChangesListener();
+        this.autoresizeDiv();
+    }
+
+    autoresizeDiv(){
+        //creadits to the author: https://stephanwagner.me/auto-resizing-textarea
+       $.each($('div[data-autoresize]'), function() {
+           var offset = this.offsetHeight - this.clientHeight;
+        
+           var resizeDiv = function(el) {
+               $(el).css('height', 'auto').css('height', el.scrollHeight + offset);
+           };
+           $(this).on('keyup input', function() { resizeDiv(this); }).removeAttr('data-autoresize');
+       });
     }
 
     setItemsChangesListener(){
         // select the target node
-        var target = document.querySelector('.items-container > ul');
-        //var target = $('#readingitem-id-'+this.itemid).find('.items-container ul');
-        console.log(target);
+        //var target = document.querySelector('.items-container > ul');
+        var target = $('#readingitem-id-'+this.itemid).find('.items-container > ul');
+        //console.log(target[0]);
 
         // Callback function to execute when mutations are observed
         var callback = (mutations)=> {
@@ -235,7 +237,7 @@ class ReadingItemManager{
         var config = { attributes: true, childList: true, characterData: true }
         
         // pass in the target node, as well as the observer options
-        observer.observe(target, config);
+        observer.observe(target[0], config);
         
         // later, you can stop observing
         //observer.disconnect();
@@ -244,7 +246,7 @@ class ReadingItemManager{
     //confirm disable sortable when items are empty
     confirmDisableReadingitemSortable(){
         var itemslength = $('#readingitem-id-'+this.itemid).find('.items-container > ul').children().length;
-        console.log('items length='+itemslength);
+        //console.log('items length='+itemslength);
 
         if(parseInt(itemslength) <= 0){
             $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable('disable');//disable sortable 
@@ -261,7 +263,6 @@ class ReadingItemManager{
     ReadingitemSortableManager(){
 
         $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable({//this makes carditem items sortable
-            forcePlaceholderSize: true,
             update : (event, ui)=>{
               //console.log(ui.item);
               //var cardid = $(ui.item).parents('.class-card').attr('id');
@@ -270,35 +271,114 @@ class ReadingItemManager{
             }
         }).sortable('disable');//temporary disable sortable    
     }
+
+    getCarditemCount(){
+        // select the target node
+        var target = $('#cardid_'+this.cardid).find('.carditems-container');
+        console.log(target[0].childElementCount);
+        return target[0].childElementCount;       
+    }
+
+    deleteReadingItem(){
+        firebase.database().ref('card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-' + this.itemid).update({'isDeleted':true})
+        .then(() => {   
+            console.log('Reading Item Deleted');
+            this.showUndoSnackBar();
+        }).catch((err)=>{
+          console.log(err);  
+        }); 
+    }
+
+    updatecarditemslist(){
+        var updates = {}, classid = $('.class-form').attr('id');
+        classid = classid.substring(8, classid.length);
+        
+        var carditemsidlist = [], carditems = $('#cardid_'+this.cardid).find('div.carditems-container').children();//get all card items
+        if(carditems.length > 0){
+            for(let e=0; e < carditems.length; e++){
+                var span_closed_but = carditems[e].firstElementChild;
+                var span_drag_but = span_closed_but.nextElementSibling;
+                var item_el = span_drag_but.nextElementSibling;
+                var carditemid = item_el.getAttribute('id');
+                    
+                carditemsidlist.push(carditemid);
+            }
+            updates['card/' + this.theUser.uid + '/classid_' + classid + '/cardid_' + this.cardid + '/item_list'] = carditemsidlist;   
+        }else{
+            updates['card/' + this.theUser.uid + '/classid_' + classid + '/cardid_' + this.cardid + '/item_list'] = null;   
+        }
+     
+        firebase.database().ref().update(updates)
+        .then(() => {     
+            console.log('Card item list Updated succesfull!');
+        }).catch((err)=>{
+            console.log(err);  
+        });
+    }
     
     //This method updates the items list sort order in database, we call this method when items changes the sort order
     updatereadingitemslist(){
 
-        if(!$('.btncreate').attr('disabled') === true){
-            console.log('Unable to update, the class is not yet submitted.');
-            return;
-        }
-  
         var updates = {};
   
         var items = $('#readingitem-id-'+this.itemid).find('div.items-container ul').children();//get all card items
         var itemsidlist = [];
   
         for(let b=0; b < items.length; b++){
-            var editable = $(items[b]).find('.editable');
+            var editable = $(items[b]).find('.item');
             var itemid = $(editable[0]).attr('id');
-
-            itemsidlist.push(itemid);
+            
+            if(itemid){
+                itemsidlist.push(itemid);
+            }   
         }
               
-        updates['card_item/' + this.theUser.uid + '/readingitem-id-'+ this.itemid  +'/item_list'] = itemsidlist;      
+        updates['card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-'+ this.itemid  +'/item_list'] = itemsidlist;      
                 
         firebase.database().ref().update(updates)
         .then(() => {
-          console.log('Update succesfull!');
+          console.log('Reading item list Updated succesfull!');
         }).catch((err)=>{
           console.log(err);
           console.log("failed to update");
+        });
+    }
+
+    showUndoSnackBar(){
+        var snackbarContainer = document.querySelector('.mdl-snackbar');
+
+        var handler = (event)=> {
+            firebase.database().ref('card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-' + this.itemid).update({'isDeleted':false})
+            .then(() => {   
+            }).catch((err)=>{
+                console.log(err);  
+            }); 
+        };
+
+        var data = {
+            message: 'Reading item deleted',
+            timeout: 5000,
+            actionHandler: handler,
+            actionText: 'Undo'
+        };
+        snackbarContainer.MaterialSnackbar.showSnackbar(data);
+    }
+
+    saveItem(itemtype){
+
+        let itemid = (new Date()).getTime().toString(36);//creates new item id
+
+        var iteminfo = {
+            carditemid: 'readingitem-id-' + this.itemid,
+            isDeleted: false,
+            itemtype: itemtype
+        };
+ 
+        firebase.database().ref('item/' + this.theUser.uid + '/readingitem-id-' + this.itemid + '/item-id-' + itemid).set(iteminfo)
+        .then(() => {     
+            console.log('Item saved');
+        }).catch((err)=>{
+            console.log(err);  
         });
     }
 }

@@ -1,15 +1,17 @@
 "use strict";
 class CardManager {
-    constructor(theUser, id = null) {
+    constructor(theUser, classid, id = null) {
         this.theUser = theUser;
+        this.classid = classid;
         this.cardid;
-        this.readingItemManagers = [];
         
         if(id){
             this.cardid = id;
+            setTimeout(()=>{
+                this.updateClassCardList();
+            }, 1000);   
         }else{
-            let cardid = (new Date()).getTime().toString(36);//creates new card id
-            this.cardid = cardid;//Initialize card id
+            return;
         }
 
         var cardelement = `
@@ -80,16 +82,12 @@ class CardManager {
         $(cardelement).appendTo('.create-card-cont').hide().show('clip');//apply clip effects 
 
         $('#cardid_'+this.cardid).find('div.carditems-container').sortable({//this makes card items sortable
-            forcePlaceholderSize: true,
             update : (event, ui)=>{
-              //console.log(ui.item);
-              //var cardid = $(ui.item).parent('.class-card').attr('id');
-              //console.log(cardid);
               this.updatecarditemslist();
             }
         }).sortable('disable');//temporary disable sortable 
         
-        this.setupButtonsEventHandlers();
+        this.setupEventHandlers();
     }
 
     setTitle(text){
@@ -123,7 +121,7 @@ class CardManager {
                 $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
             });
 
-            new VideoItemManager(cardid);//create new video item
+            this.savecarditeminfo('videoitem');
             return;
         });
 
@@ -132,15 +130,14 @@ class CardManager {
                 $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
             });
 
-            this.readingItemManagers.push(new ReadingItemManager(this.cardid));//create new readinglist item
+            this.savecarditeminfo('readinglist');
             return;
         });
 
-        $('#cardid_'+cardid).find('.card-close-but').click(function(e){//set up close button event handler
-            if(confirm('Are you sure you want to remove this card?')){
-                $(this).parent().hide('clip', function(){//apply clip effects before it removes
-                    $(this).remove();//removes the current card selected
-                });
+        $('#cardid_'+cardid).find('.card-close-but').click((e)=>{//set up close button event handler
+            var c = e.currentTarget;
+            if(confirm('Are you sure you want to remove this card?')){         
+                this.deleteCard();             
             }
             return;
         });
@@ -172,6 +169,18 @@ class CardManager {
         });
     }
 
+    setupEventHandlers(){
+        $('#cardid_'+this.cardid).find('.card_title').change((e)=>{         
+            this.savecardinfo('title', $(e.currentTarget).val());
+        });
+
+        $('#cardid_'+this.cardid).find('.card_des').change((e)=>{        
+            this.savecardinfo('description', $(e.currentTarget).val());
+        });
+
+        this.setupButtonsEventHandlers();
+    }
+
     setcardlistTitleDes(cardid){
 
           let card_title = $(cardid).find('.card_title').val();//card title
@@ -195,12 +204,51 @@ class CardManager {
         $(cardid).hide().show('clip');//apply clip effects 
     }
 
-    updatecarditemslist(){
+    updateClassCardList(){
+        var updates = {};
+        
+        var cardidlist = [],  cards = $('.create-card-cont').children();//get all cards 
+        if(cards.length > 0){
+            for(let d=0; d < cards.length; d++){
+                let cardid = cards[d].getAttribute('id'); 
+                cardidlist.push(cardid);//it collect all of the card id 
+            }
+            updates['class/' + this.theUser.uid + '/classid_' + this.classid + '/card_list'] = cardidlist;
+        }else{
+            updates['class/' + this.theUser.uid + '/classid_' + this.classid + '/card_list'] = null;
+        }     
+           
+        firebase.database().ref().update(updates)
+        .then(() => {   
+            console.log('Class card list updated');
+        }).catch((err)=>{
+          console.log(err);  
+        });
+    }
 
-        if(!$('.btncreate').attr('disabled') === true){
-            console.log('Unable to update, the class is not yet submitted.');
-            return;
-        }
+    savecardinfo(fields, value){
+        var updates = {}
+        //updates['card/' + this.theUser.uid + '/' + this.classid + '/cardid_' + this.cardid + '/modi'] = value;
+        updates['card/' + this.theUser.uid + '/classid_' + this.classid + '/cardid_' + this.cardid + '/'+fields] = value;
+        firebase.database().ref().update(updates)
+        .then(() => {   
+            console.log('Card saved');
+        }).catch((err)=>{
+          console.log(err);  
+        });
+    }
+
+    deleteCard(){    
+        firebase.database().ref('card/' + this.theUser.uid + '/classid_' + this.classid + '/cardid_' + this.cardid).update({'isDeleted':true})
+        .then(() => {   
+            console.log('Card Deleted');
+            this.showUndoSnackBar();
+        }).catch((err)=>{
+          console.log(err);  
+        }); 
+    }
+
+    updatecarditemslist(){
 
         var updates = {};
       
@@ -216,15 +264,60 @@ class CardManager {
             carditemsidlist.push(carditemid);
         }
 
-        updates['card/' + this.theUser.uid + '/' + 'cardid_'+ this.cardid + '/item_list'] = carditemsidlist;      
+        updates['card/' + this.theUser.uid + '/classid_' + this.classid + '/cardid_' + this.cardid + '/item_list'] = carditemsidlist;      
            
         firebase.database().ref().update(updates)
         .then(() => {
-            console.log('Update succesfull!');
+            console.log('Card item list Updated succesfull!');
         }).catch((err)=>{
             console.log(err);
-            console.log("failed to update");
         });
     }
+
+    showUndoSnackBar(){
+        var snackbarContainer = document.querySelector('.mdl-snackbar');
+
+        var handler = (event)=> {
+            firebase.database().ref('card/' + this.theUser.uid + '/classid_' + this.classid + '/cardid_' + this.cardid).update({'isDeleted':false})
+            .then(() => {   
+            }).catch((err)=>{
+                console.log(err);  
+            }); 
+        };
+
+        var data = {
+            message: 'Card deleted',
+            timeout: 5000,
+            actionHandler: handler,
+            actionText: 'Undo'
+        };
+        snackbarContainer.MaterialSnackbar.showSnackbar(data);
+    }
+
+    /* Save card item */
+    savecarditeminfo(itemtype){
+
+        let type, carditemid = (new Date()).getTime().toString(36);//creates new card id
+
+        if(itemtype == 'videoitem'){
+            type = 'videoitem-id-';
+        }else{
+            type = 'readingitem-id-';
+        }
+
+        var carditeminfo = {
+            cardid: 'cardid_' + this.cardid,
+            isDeleted: false,
+            type: itemtype
+        };
+        
+        firebase.database().ref('card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/'+type + carditemid).set(carditeminfo)
+        .then(() => {   
+            console.log('Card item saved');
+        }).catch((err)=>{
+        console.log(err);  
+        });
+    }
+
 }
 
