@@ -484,6 +484,7 @@ class ClassManager {
       });
     });
   }
+  
   updateclassinfo(){
 
     if(!$('.btncreate').attr('disabled') === true){
