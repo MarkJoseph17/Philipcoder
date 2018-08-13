@@ -128,7 +128,6 @@ class ItemManager{
             }     
         });
     }
-
     setTextContent(text){
         $('#readingitem-id-'+this.carditemid).find('#item-id-'+this.itemid).html(text);
     }
@@ -145,12 +144,12 @@ class ItemManager{
                 if(itemid){
                     itemsidlist.push(itemid);
                 }            
-            }        
+            }
             updates['card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-'+ this.carditemid  +'/item_list'] = itemsidlist;
         }else{
             updates['card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-'+ this.carditemid  +'/item_list'] = null;
-        }   
-                
+        }
+
         firebase.database().ref().update(updates)
         .then(() => {
           console.log('Reading item list Updated succesfull!');

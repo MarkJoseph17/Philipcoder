@@ -1,15 +1,19 @@
 "use strict";
 
 class CodeQuestionManager {
-    constructor(carditemid, itemtype, id = null) {
+    constructor(theUser, cardid, carditemid, itemtype, id = null) {
+        this.theUser = theUser;
+        this.cardid = cardid;//also get the parent card id of this newly created item, we pass it through our constructor of this class
         this.carditemid = carditemid; //also get the parent readinglist item id of this newly created item, we pass it through our constructor of this class
         this.itemid;
 
-        if (id) {
+        if(id){
             this.itemid = id;
-        } else {
-            let newitemid = (new Date()).getTime().toString(36); //creates new item id
-            this.itemid = newitemid; //Initialize item id
+            setTimeout(()=>{
+                this.updateReadingItemsList();
+            }, 1000);   
+        }else{
+            return;
         }
 
         var element = `<div id="item-id-${this.itemid}" class="item code_question" data-type="cq">
@@ -30,15 +34,25 @@ class CodeQuestionManager {
         <div class="form-check form-check-inline">
             <input type="checkbox" id="showHtmlCheckbox${this.itemid}" check="checked" />
             <label class="form-check-label" for="showHtmlCheckbox">Use HTML</label>
-            <div>
-                <label style="margin-left: 100px;">Starting Point For the Student:</label>
+        </div>
+            <label style="margin-left: 100px;">Starting Point For the Student:</label>
+            <br>
+            <textarea id="startingHtmlText" cols="50" rows="20"></textarea> 
+            <br>
+            <label>Correct Answer:</label>
+        <br/>
+            <textarea id="correctHtmlText" cols="50" rows="20"></textarea>          
+        <br>
+        <div id="item-id-${this.itemid}" class="item code_question" data-type="cq">
+            <div class="question-menu-row">
+                <div class="question-col">
+            </div>
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 90%;">
+                <input class="mdl-textfield__input cssquestion" type="text" id="cssquestionField${this.itemid}">
+                <label class="mdl-textfield__label" for="cssquestionField${this.itemid}" style="margin-bottom: 0px;">cssquestion</label>
+                </div>
             </div>
         </div>
-            <textarea id="htmlText" cols="50" rows="20"></textarea>
-        <div>
-            <label>Correct Answer:</label>
-        </div>
-        <br>
         <!--This is for CSS-->
         <div class="form-check form-check-inline">
             <input type="checkbox" id="showCssCheckbox${this.itemid}" check="checked" />
@@ -47,29 +61,32 @@ class CodeQuestionManager {
                 <label style="margin-left: 100px;">Starting Point For the Student:</label>
             </div>
         </div>
-            <textarea id="cssText" cols="50" rows="20"></textarea>
+            <textarea id="startingCssText" cols="50" rows="20"></textarea>
         <div>
             <label>Correct Answer:</label>
         </div>
+            <textarea id="correctCssText" cols="50" rows="20"></textarea>
         <br>
 
         <!--This is for JS-->
         <div class="form-check form-check-inline">
-            <input type="checkbox" id="showJavascriptCheckbox${this.itemid}" check="checked" />
-            <label class="form-check-label" for="showJavascriptCheckbox">Use JavaScript</label>
+            <input type="checkbox" id="showJsCheckbox${this.itemid}" check="checked" />
+            <label class="form-check-label" for="showJsCheckbox">Use JavaScript</label>
             <div>
                 <label style="margin-left: 100px;">Starting Point For the Student:</label>
             </div>
         </div>
-            <textarea id="javascriptText" cols="50" rows="20"></textarea>
+            <textarea id="startingJavaScriptText" cols="50" rows="20"></textarea>
         <div>
             <label>Correct Answer:</label>
         </div>
+            <textarea id="correctJavaScriptText" cols="50" rows="20"></textarea>
         <br>
-        <div id="output" style="width:100%; height: 400px; border: 2px solid black; padding: 20px;">
+        <div id="output" style="width:100%; height:300px; border: 2px solid black;">
         </div>
-        <br>
+        <br/>
         <button id="doit" style="padding: 10px; width: 20%;">Run</button>`;
+
          //Initialize element 
          $('#readingitem-id-' + this.carditemid).find('.items-container > ul').append(`
         <li>
@@ -80,6 +97,9 @@ class CodeQuestionManager {
                 ${element}
             </div>
         </li>`);
+
+        // This required to make the UI look correctly by Material Design Lite
+        componentHandler.upgradeElements(document.getElementById('item-id-'+this.itemid));
         
         $('#item-id-' + this.itemid).focus();
         this.setEventHandlerListener();
@@ -88,11 +108,11 @@ class CodeQuestionManager {
 
     setEventHandlerListener() {
 
-        $('#item-id-' + this.itemid).parents('li').hover(function() {
+        $('#item-id-' + this.itemid).parents('li').hover(()=> {
             $(this).find('.item-close-but').css({
                 'display': 'block'
             });
-        }, function() {
+        }, ()=> {
             $(this).find('.item-close-but').css({
                 'display': 'none'
             });
@@ -100,115 +120,135 @@ class CodeQuestionManager {
 
         $('#item-id-' + this.itemid).parents('li').find('.item-close-but').click((e) => {
             var c = e.currentTarget;
-            if (confirm('Delete this item?')) {
-                $(c).parent().fadeOut('slow', (e) => {
-                    $(c).parent().remove();
-                });
-            }
+            if(confirm('Delete this item?')){
+                this.deleteItem();
+            }  
         });
 
-        $('#item-id-' + this.itemid).find('.addanswer').click(() => {
-            this.addAnswer();
+        $('#questionField'+this.itemid).change((e)=>{
+            this.saveItemInfo('question', e.currentTarget.value);
         });
 
-        $('#item-id-' + this.itemid).find('.addoption').click(() => {
-            this.addOption();
+        $('#cssquestionField'+this.itemid).change((e)=>{
+            this.saveItemInfo('cssquestion', e.currentTarget.value);
         });
-        //this.setupUploadImageDialog();
+    }
+
+    saveItemInfo(fields, value){
+
+        var updates = {};
+
+        updates['item/' + this.theUser.uid + '/readingitem-id-' + this.carditemid +  '/item-id-' + this.itemid + '/'+fields+'/'] = value; 
+ 
+        firebase.database().ref().update(updates)
+        .then(() => {     
+            console.log('Item saved');
+        }).catch((err)=>{
+            console.log(err);  
+        });
     }
 
     setTextarea() {
         //This is for html
-        var htmlText = document.getElementById("htmlText");
-        this.editor2Html = CodeMirror.fromTextArea(htmlText, {
+        var startingHtmlText = document.getElementById("startingHtmlText");
+        this.editorhtml = CodeMirror.fromTextArea(startingHtmlText, {
+            mode: 'html',
+            theme: '3024-day',
             lineNumbers: true,
-            mode: "html",
-            theme: "night.css"
+            firstLineNumber: 1
         });
-
+        
+        this.editorhtml.on("change", ()=> {
+            this.saveItemInfo('startingHtmlText', this.editorhtml.getValue());
+        });
+      
+        var correctHtmlText = document.getElementById("correctHtmlText");
+        this.editor2Html = CodeMirror.fromTextArea(correctHtmlText, {
+            mode: 'html',
+            theme: '3024-day',
+            lineNumbers: true
+        }); 
+        
+        this.editor2Html.on("change", ()=> {
+            this.saveItemInfo('correctHtmlText', this.editor2Html.getValue());  
+        });
+        
         $(`#showHtmlCheckbox${this.itemid}`).change((e) => {
             var shouldBeShow = e.currentTarget.checked;
+            this.saveItemInfo('showHtml', shouldBeShow);
             if (shouldBeShow) {
                 this.editor2Html.setOption("readOnly", false);
-            } else {
-                this.editor2Html.setOption("readOnly", true);
-            }
-        });
-
-        var htmlText = document.getElementById("htmlText");
-        this.editorhtml = CodeMirror.fromTextArea(htmlText, {
-            lineNumbers: true,
-            mode: "html"
-        });
-
-        $(`#showHtmlCheckbox${this.itemid}`).change((e) => {
-            var shouldBeShow = e.currentTarget.checked;
-            if (shouldBeShow) {
                 this.editorhtml.setOption("readOnly", false);
             } else {
+                this.editor2Html.setOption("readOnly", true);
                 this.editorhtml.setOption("readOnly", true);
             }
         });
 
         //This is for css
-        var cssText = document.getElementById("cssText");
-        this.editor2Css = CodeMirror.fromTextArea(cssText, {
-            lineNumbers: true,
+        var startingCssText = document.getElementById("startingCssText");
+        this.editorcss = CodeMirror.fromTextArea(startingCssText, {
             mode: "css",
-            theme: "night.css"
+            theme: '3024-day',
+            lineNumbers: true,
+            tabsize: 2
+        });
+        this.editorcss.on("change", ()=> {
+            this.saveItemInfo('startingCssText', this.editorcss.getValue());
+        });
+
+        var correctCssText = document.getElementById("correctCssText");
+        this.editor2Css = CodeMirror.fromTextArea(correctCssText, {
+            mode: "css",
+            theme: '3024-day',
+            lineNumbers: true,
+            tabsize: 2
+        });
+        this.editor2Css.on("change", ()=> {
+            this.saveItemInfo('correctCssText', this.editor2Css.getValue());
         });
 
         $(`#showCssCheckbox${this.itemid}`).change((e) => {
             var shouldBeShow = e.currentTarget.checked;
+            this.saveItemInfo('showCss', shouldBeShow);
             if (shouldBeShow) {
                 this.editor2Css.setOption("readOnly", false);
-            } else {
-                this.editor2Css.setOption("readOnly", true);
-            }
-        });
-
-        var cssText = document.getElementById("cssText");
-        this.editorcss = CodeMirror.fromTextArea(cssText, {
-            lineNumbers: true,
-            mode: "css"
-        });
-        $(`#showCssCheckbox${this.itemid}`).change((e) => {
-            var shouldBeShow = e.currentTarget.checked;
-            if (shouldBeShow) {
                 this.editorcss.setOption("readOnly", false);
             } else {
+                this.editor2Css.setOption("readOnly", true);
                 this.editorcss.setOption("readOnly", true);
             }
         });
 
         //This is for javascript
-        var javascriptText = document.getElementById("javascriptText");
-        this.editor2Javascript = CodeMirror.fromTextArea(javascriptText, {
-            lineNumbers: true,
+        var startingJavaScriptText = document.getElementById("startingJavaScriptText");
+        this.editorjavascript = CodeMirror.fromTextArea(startingJavaScriptText, {
             mode: "javascript",
-            theme: "night.css"
+            theme: '3024-day',
+            lineNumbers: true
+        });
+        this.editorjavascript.on("change", ()=> {
+            this.saveItemInfo('startingJavaScriptText', this.editorjavascript.getValue());
         });
 
-        $(`#showJavascriptCheckbox${this.itemid}`).change((e) => {
-            var shouldBeShow = e.currentTarget.checked;
-            if (shouldBeShow) {
-                this.editor2Javascript.setOption("readOnly", false);
-            } else {
-                this.editor2Javascript.setOption("readOnly", true);
-            }
-        });
-
-        var javascriptText = document.getElementById("javascriptText");
-        this.editorjavascript = CodeMirror.fromTextArea(javascriptText, {
-            lineNumbers: true,
+        var correctJavaScriptText = document.getElementById("correctJavaScriptText");
+        this.editor2JavaScript = CodeMirror.fromTextArea(correctJavaScriptText, {
             mode: "javascript",
+            theme: '3024-day',
+            lineNumbers: true
+        });
+        this.editor2JavaScript.on("change", ()=> {
+            this.saveItemInfo('correctJavaScriptText', this.editor2JavaScript.getValue());
         });
 
-        $(`#showJavascriptCheckbox${this.itemid}`).change((e) => {
+        $(`#showJsCheckbox${this.itemid}`).change((e) => {
             var shouldBeShow = e.currentTarget.checked;
+            this.saveItemInfo('showJavaScript', shouldBeShow);
             if (shouldBeShow) {
+                this.editor2JavaScript.setOption("readOnly", false);
                 this.editorjavascript.setOption("readOnly", false);
             } else {
+                this.editor2JavaScript.setOption("readOnly", true);
                 this.editorjavascript.setOption("readOnly", true);
             }
         });
@@ -218,8 +258,66 @@ class CodeQuestionManager {
 
             $('#output')
                 .append("<style>" + this.editor2Css.getValue() + "</style>")
-                .append("<script>" + this.editor2Javascript.getValue() + "<" + "/" + "script" + ">")
+                .append("<script>" + this.editor2JavaScript.getValue() + "<" + "/" + "script" + ">")
                 .append(this.editor2Html.getValue());
         });
+    }
+
+    updateReadingItemsList(){
+
+        var updates = {};
+  
+        var itemsidlist = [], items = $('#readingitem-id-'+this.carditemid).find('div.items-container ul').children();//get all card items
+        if(items.length > 0){
+            for(let b=0; b < items.length; b++){
+                var editable = $(items[b]).find('.item');
+                var itemid = $(editable[0]).attr('id');
+                if(itemid){
+                    itemsidlist.push(itemid);
+                }            
+            }        
+            updates['card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-'+ this.carditemid  +'/item_list'] = itemsidlist;
+        }else{
+            updates['card_item/' + this.theUser.uid + '/cardid_' + this.cardid + '/readingitem-id-'+ this.carditemid  +'/item_list'] = null;
+        }   
+                
+        firebase.database().ref().update(updates)
+        .then(() => {
+          console.log('Reading item list Updated succesfull!');
+        }).catch((err)=>{
+          console.log(err);
+          console.log("failed to update");
+        });
+    }
+
+    deleteItem(){
+        
+        firebase.database().ref('item/' + this.theUser.uid + '/readingitem-id-' + this.carditemid +  '/item-id-' + this.itemid).update({'isDeleted':true})
+        .then(() => {   
+            console.log('Item Deleted');
+            this.showUndoSnackBar();
+        }).catch((err)=>{
+          console.log(err);  
+        }); 
+    }
+
+    showUndoSnackBar(){
+        var snackbarContainer = document.querySelector('.mdl-snackbar');
+
+        var handler = (event)=> {
+            firebase.database().ref('item/' + this.theUser.uid + '/readingitem-id-' + this.carditemid +  '/item-id-' + this.itemid).update({'isDeleted':false})
+            .then(() => {   
+            }).catch((err)=>{
+                console.log(err);  
+            }); 
+        };
+
+        var data = {
+            message: 'Item deleted',
+            timeout: 5000,
+            actionHandler: handler,
+            actionText: 'Undo'
+        };
+        snackbarContainer.MaterialSnackbar.showSnackbar(data);
     }
 }

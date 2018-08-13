@@ -4,6 +4,7 @@ class ReadingItemManager{
         this.theUser = theUser;
         this.cardid = cardid;//also get the parent card id of this newly created reading list item, we pass it through our constructor of this class
         this.itemid;
+        this.codeQuestionManagers = [];
 
         if(id){
             this.itemid = id;
@@ -71,6 +72,12 @@ class ReadingItemManager{
                                         Question-Options
                                     </span>
                                 </li>
+                                <li class="btn-cq">
+                                    <span style="cursor: pointer;">
+                                    <i class="material-icons">code</i>
+                                        Code-Question
+                                    </span>
+                                </li>
                             </ul>
                         </div>
                       </div>`;
@@ -89,7 +96,7 @@ class ReadingItemManager{
         $(carditem).appendTo($('#cardid_'+this.cardid).find('.carditems-container')).hide().show('clip');//apply clip effects 
 
         this.setupEventHandlerListener();
-        this.ReadingitemSortableManager();
+        this.readingItemSortableManager();
 
         // This required to make the UI look correctly by Material Design Lite 
         componentHandler.upgradeElements(document.getElementById('carditem-con-id-'+this.itemid));
@@ -188,7 +195,14 @@ class ReadingItemManager{
             }
         });
 
-        $('#carditem-con-id-'+this.itemid).find('.carditem-close-but').click((e)=>{//setup delete handler
+        $('#carditem-con-id-'+this.itemid).find('.btn-cq').click((e)=>{
+            var isDisabled = $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable( "option", "disabled" );
+            if(isDisabled){//we dont allow to insert new item when sortable is enabled
+                 this.saveItem('cq');//create new item
+            }
+        });
+
+        $('#carditem-con-id-'+this.itemid).find('.carditem-close-but').click((e)=>{//setup delete handler                                             
             var c = e.currentTarget;
             if(confirm('Are you sure you want to remove this item?')){   
                 this.deleteReadingItem();
@@ -260,7 +274,7 @@ class ReadingItemManager{
     }
 
     //This method is responsible for the sorting item feature 
-    ReadingitemSortableManager(){
+    readingItemSortableManager(){
 
         $('#readingitem-id-'+this.itemid).find('div.items-container ul').sortable({//this makes carditem items sortable
             update : (event, ui)=>{
@@ -373,7 +387,7 @@ class ReadingItemManager{
             isDeleted: false,
             itemtype: itemtype
         };
- 
+       
         firebase.database().ref('item/' + this.theUser.uid + '/readingitem-id-' + this.itemid + '/item-id-' + itemid).set(iteminfo)
         .then(() => {     
             console.log('Item saved');

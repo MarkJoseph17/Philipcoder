@@ -140,7 +140,20 @@ class UpdateClassManager {
           }else{
             quizitem.addOption('', '');
           }
-          
+
+        }else if(itemtype == 'cq'){
+          var targetCodeQuestionManager = new CodeQuestionManager(this.theUser, cardid, carditemid, itemtype, itemid);//create new item
+          $(`#questionField${itemid}`).val(data.val().question);
+            $(`#showHtmlCheckbox${itemid}`).prop('checked', data.val().showHtml);
+            $(`#showCssCheckbox${itemid}`).prop('checked', data.val().showCss);
+            $(`#showJsCheckbox${itemid}`).prop('checked', data.val().showJavaScript);
+            targetCodeQuestionManager.editorhtml.getValue(data.val().startingHtmlText);
+            targetCodeQuestionManager.editor2Html.getValue(data.val().correctHtmlText);
+            targetCodeQuestionManager.editorcss.getValue(data.val().startingCssText);
+            targetCodeQuestionManager.editor2Css.getValue(data.val().correcCssText);
+            targetCodeQuestionManager.editorjavascript.getValue(data.val().startingJavaScriptText);
+            targetCodeQuestionManager.editor2JavaScript.getValue(data.val().correctJavaScriptText);
+           
         }else{
           var item = new ItemManager(this.theUser, cardid, carditemid, itemtype, itemid);//create new item           
           item.setTextContent(snapitem.val().text);                  

@@ -6,6 +6,8 @@ class ClassManager {
     this.courseid = courseid;
     this.classid;
     this.cardCount = 0;
+    this.cardManagers = [];
+
 
     if(id){
       this.classid = id.substring(8, id.length);
@@ -15,6 +17,7 @@ class ClassManager {
       //creates new class id
       let genclassid = (new Date()).getTime().toString(36);
       this.classid = genclassid;//Initialize class id
+      //this.cardManagers.push(new CardManager(this.theUser));
       setTimeout(()=>{
         this.saveclassinfo('','', true);
       }, 1000);  
@@ -76,6 +79,19 @@ class ClassManager {
               quizitem.addOption('', '');
             }
 
+          }else if(itemtype == 'cq'){
+            var targetCodeQuestionManager = new CodeQuestionManager(this.theUser, cardid, carditemid, itemtype, itemid);//create new item
+            $(`#questionField${itemid}`).val(data.val().question);
+            $(`#showHtmlCheckbox${itemid}`).prop('checked', data.val().showHtml);
+            $(`#showCssCheckbox${itemid}`).prop('checked', data.val().showCss);
+            $(`#showJsCheckbox${itemid}`).prop('checked', data.val().showJavaScript);
+            targetCodeQuestionManager.editorhtml.getValue(data.val().startingHtmlText);
+            targetCodeQuestionManager.editor2Html.getValue(data.val().correctHtmlText);
+            targetCodeQuestionManager.editorcss.getValue(data.val().startingCssText);
+            targetCodeQuestionManager.editor2Css.getValue(data.val().correcCssText);
+            targetCodeQuestionManager.editorjavascript.getValue(data.val().startingJavaScriptText);
+            targetCodeQuestionManager.editor2JavaScript.getValue(data.val().correctJavaScriptText);
+            
           }else{
             new ItemManager(this.theUser, cardid, carditemid, itemtype, itemid)//create new item
               .setTextContent(data.val().text);     
