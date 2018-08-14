@@ -4,7 +4,6 @@ class CardManager {
         this.theUser = theUser;
         this.classid = classid;
         this.cardid;
-        this.readingItemManagers = [];
         
         if(id){
             this.cardid = id;
@@ -130,8 +129,8 @@ class CardManager {
             $('#cardid_'+cardid).find(".eic-col-1").slideUp('slow', ()=>{
                 $('#cardid_'+cardid).find('.btn-add-item').css({'display':'block'});
             });
+
             this.savecarditeminfo('readinglist');
-            //this.readingItemManagers.push(new ReadingItemManager(this.cardid));
             return;
         });
 

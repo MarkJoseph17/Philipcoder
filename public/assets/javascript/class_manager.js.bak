@@ -1,0 +1,1009 @@
+"use strict";
+
+class ClassManager {
+  constructor(theUser, courseid, id) {
+    this.theUser = theUser;
+    this.courseid = courseid;
+    this.classid;
+    this.progressPercentage = 0;
+    this.cardCount = 0;
+    this.videoitemCount = 0;// this property only available when save class button has been clicked
+
+    if(id){
+      this.classid = id;
+      this.UpdateClassManager(this.classid);
+    }else{
+      //creates new class id
+      let genclassid = (new Date()).getTime().toString(36);
+      this.classid = genclassid;//Initialize class id
+      new CardManager(this.theUser);//display one card
+    }
+
+    $('.class-form').attr('id','classid_'+this.classid);
+
+    this.setClassFormInputEventHandlers();
+    this.setFloatingMenuButtonEventHandlers();
+    this.autoresizeTextarea();
+    this.setCardsChangesListener();
+
+    $('.btnsaveclass').one("click", () =>{
+      this.videoitemCount = this.getVidItemCount();//get the total video item 
+      this.addclass();
+
+      /*var dialog = document.querySelector('dialog');
+      if (! dialog.showModal) {
+        dialogPolyfill.registerDialog(dialog);
+      }    
+      dialog.showModal();*/
+
+    });
+
+    $('.create-card-cont').sortable({//this makes class cards sortable
+      update : (event, ui)=>{
+        this.updateclasscardslist();
+      }
+    });
+    $('.create-card-cont').sortable({
+      forcePlaceholderSize: true
+    });
+    $( ".create-card-cont" ).sortable('disable');//disable sortable
+  }
+
+  getVidItemCount(){
+
+    var vidUplCount = 0;
+
+    var cards = $('.create-card-cont').children();//get all cards
+
+    for(let i=0; i < cards.length; i++){
+      
+      var carditems = $(cards[i]).find('.carditems-container').children();//get all card items
+
+      for(let y=0; y < carditems.length; y++){
+        var span_closed_but = carditems[y].firstElementChild;
+        var span_drag_but = span_closed_but.nextElementSibling;
+        var item_el = span_drag_but.nextElementSibling;
+        var carditemid = item_el.getAttribute('id');
+        var carditemtype = item_el.getAttribute('class');
+
+       
+        if(carditemtype === 'videoitem'){    
+          var vidinput = $('#'+carditemid).find('.videoitem-input-vid');
+          //var videlement = $('#'+carditemid).find('video');
+
+          //var videofile = videlement[0].attributes[3].value
+          const videofile = vidinput[0].files[0];
+
+          //console.log(videlement[0].attributes[3].value);
+
+          if(videofile != undefined){
+            vidUplCount += 1;
+            //console.log(vidUplCount);
+          }
+          
+        }
+
+      }    
+    }
+
+    return vidUplCount;
+
+  }
+
+  autoresizeTextarea(){
+    //creadits to the author: https://stephanwagner.me/auto-resizing-textarea
+   $.each($('textarea[data-autoresize]'), function() {
+       var offset = this.offsetHeight - this.clientHeight;
+    
+       var resizeTextarea = function(el) {
+           $(el).css('height', 'auto').css('height', el.scrollHeight + offset);
+       };
+       $(this).on('keyup input', function() { resizeTextarea(this); }).removeAttr('data-autoresize');
+   });
+  }
+
+  setCardsChangesListener(){
+    // select the target node
+    var target = document.querySelector('.create-card-cont');
+    //var target = $('#readingitem-id-'+this.itemid).find('.items-container ul');
+    //console.log(target);
+
+    // Callback function to execute when mutations are observed
+    var callback = (mutations)=> {
+        mutations.forEach((mutation)=> {
+            if (mutation.type == 'childList') {
+                //console.log('A child node has been added or removed.');
+                this.cardCount = mutation.target.childElementCount;              
+            }
+            else if (mutation.type == 'attributes') {
+                //console.log('The ' + mutation.attributeName + ' attribute was modified.');
+            }
+        });
+    };
+    
+    // create an observer instance
+    var observer = new MutationObserver(callback);
+    
+    // configuration of the observer:
+    var config = { attributes: true, childList: true, characterData: true }
+    
+    // pass in the target node, as well as the observer options
+    observer.observe(target, config);
+    
+    // later, you can stop observing
+    //observer.disconnect();
+  }
+
+  setClassFormInputEventHandlers(){
+    $("#class-input-img").change((e)=> {
+      this.readURL(e.currentTarget, "class-img-prev-elid");
+    });
+
+    $("#class-input-vid").change((e)=> {
+      this.readURL(e.currentTarget, "class-video-prev-elid");
+    });
+  }
+
+  setFloatingMenuButtonEventHandlers(){
+    $('#floating-menu button.addcard').click((e)=>{
+      new CardManager(this.theUser);
+      $("[data-toggle='tooltip']").tooltip('hide');//this makes tooltip refresh its text content
+    });
+
+    $('#floating-menu button.listview').click((e)=>{
+      var c = e.currentTarget;
+
+      if(c.firstElementChild.textContent === 'view_list'){
+
+        this.setcardlistTitleDes();//this function set title and description for every card
+
+        $('.class-card').css({'height':'80px','overflow':'hidden'});//sets all cards height to max-content
+        $('.elements-items-container').css({'display':'none'});//Hides all cards contents
+        $('.card-panel').css({'display':'block'});//Displays the cards panel for listview
+
+        c.firstElementChild.textContent = 'view_module';//changes the listview button icon to large view
+        c.setAttribute('data-original-title','Large view');//makes this button tooltip text to "Large view"
+
+        $('.card-view-but').children('i').text('view_module');//this makes all cards view button(beside close button) to be large view
+
+      }else{
+
+        $('.class-card').css({'height':'auto','overflow':'unset'});//sets all cards height to 350 pixels (default)
+        $('.elements-items-container').css({'display':'block'});//Displays all cards contents
+        $('.card-panel').css({'display':'none'});//Hides the cards panel
+
+        c.firstElementChild.textContent = 'view_list';//changes the listview button icon to list view
+        c.setAttribute('data-original-title','List view');//makes this button tooltip text to "List view"
+
+        $('.card-view-but').children('i').text('view_list');//this makes all cards view button(beside close button) to be List view
+
+      }
+
+      $("[data-toggle='tooltip']").tooltip('hide');//this makes tooltip refresh its text content
+      
+      this.cardsShowEffect();//show all card with effects
+
+    });
+
+    $('#floating-menu button.sortcard').click((e)=>{
+      var c = e.currentTarget;
+
+      if(c.firstElementChild.textContent === 'sort'){
+
+        c.firstElementChild.textContent = 'done_all';//changes the sortcard button icon to done_all
+        c.setAttribute('data-original-title','Done sort');//makes this sortcard button tooltip text to "Done sort"
+
+        this.setcardlistTitleDes();//this function set title and description for every card
+
+        $('.class-card').css({'height':'80px','cursor':'move','overflow':'hidden'});//sets all cards height to max-content
+        $('.elements-items-container').css({'display':'none'});//Hides all cards contents
+        $('.card-panel').css({'display':'block'});//Displays the cards panel for listview
+
+        $('.card-view-but').css({'display':'none'});//when sorting are enable for cards we dont to allow the card to be view larger
+        $('#floating-menu button.listview').attr('disabled','true');//disable listview button
+        $('#floating-menu button.addcard').attr('disabled','true');//disable add card button
+
+        $( ".create-card-cont" )
+        .sortable('enable')//ofcourse enable the sortable feature
+        .sortable({
+            connectWith: ".create-card-cont",
+            start: function(e, ui){
+                ui.placeholder.height(ui.item.height());
+            }
+        });
+
+        this.cardsShowEffect();//show all card with effects
+
+      }else{
+
+        c.firstElementChild.textContent = 'sort';//changes the button icon to list view
+        c.setAttribute('data-original-title','Sort cards');//makes this button tooltip text to "List view"
+
+        $('.class-card').css({'cursor':'default'});//sets all cards cursor to default
+
+        $('#floating-menu button.listview')
+        .html('<i class="material-icons">view_module</i>')//changes the listview button icon to large view
+        .removeAttr("disabled")//enable the listview button
+        .attr({'data-original-title':'Large view'});//enable listview button and makes tooltip text to "Large view"
+        $('#floating-menu button.addcard').removeAttr("disabled")//enable the add card button
+        
+        $('.card-view-but')
+        .html('<i class="material-icons">view_module</i>')//this makes all cards view button(beside close button) to be large view
+        .css({'display':'block'});
+        
+        $( ".create-card-cont" ).sortable('disable');//disable sortable
+
+      }
+
+      $("[data-toggle='tooltip']").tooltip('hide');//this makes tooltip refresh its text content
+    
+    });
+  }
+
+  setcardlistTitleDes(){
+    var cards = $('.create-card-cont').children();//get all cards
+    for(let i=0; i < cards.length; i++){
+      let cardid = cards[i].getAttribute('id');//get the card id
+      let card_title = $(cards[i]).find('.card_title').val();//card title
+      let card_des = $(cards[i]).find('.card_des').val();//card description
+
+      var elements = $(cards[i]).find('.card-panel').children();//get reference to card panel h5(title) and p(description)
+      console.log(elements.length);
+
+      $(elements[0]).text(card_title);//set title to h5 tag
+      $(elements[1]).text(card_des);//set description to paragraph tag
+
+      if(!card_title){
+        $(elements[0]).text('Card title here..');//set empty title to h5 tag
+      }
+      if(!card_des){
+        $(elements[1]).text('Card description here');//set empty description to paragraph tag
+      }
+    }
+  }
+
+  cardsShowEffect(){
+    var cards = $('.create-card-cont').children();//get all cards
+    for(let i=0; i < cards.length; i++){      
+      $(cards[i]).hide().show('clip');//apply clip effects 
+    }
+  }
+
+  readURL(input, preview_element_id) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        $('#'+preview_element_id).attr('src', e.target.result).parent('.prev-cont').css("display","block");
+      }
+     
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  /* Upload */
+  uploadimagefile(imagefile, callback){ 
+
+    if(imagefile == undefined){
+      //this.setProgressBarPercentage('class_image_upload', 100);
+      callback(null, null);
+      return;
+    }
+
+    let filename = imagefile.name;
+    let lastIdx = filename.lastIndexOf(".");
+
+    let extension = "";
+    if (lastIdx > 0) {
+      extension = filename.substr(lastIdx);
+    }
+
+    let newFilename = this.classid + extension;
+
+    var percentagetmp = 0, class_img_upload_percentage = 0, currentptmp = 0;
+
+    //get file
+    var imagefile = imagefile;
+    // Create the file metadata
+    var metadata = {
+      contentType: 'image/jpeg'
+    };
+    // Points to the root reference
+    var storageRef = firebase.storage().ref('class_images/'+this.courseid+'/'+newFilename);
+    // File name 
+    var imagename = storageRef.name
+    //Upload file
+    var task = storageRef.put(imagefile, metadata);
+    //update progress bar
+    task.on('state_changed',
+      (snapshot) =>{
+        //var class_img_upload_percentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        //console.log(class_img_upload_percentage);
+
+        percentagetmp = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        //class_img_upload_percentage = percentagetmp - currentptmp;
+        //currentptmp = percentagetmp;
+
+        //this.setProgressMsg('Uploading class image..');
+
+        //this.setProgressBarPercentage('class_image_upload', class_img_upload_percentage);
+      },
+      (err) =>{
+        console.log(err);
+      },
+      ()=>{
+        // Upload completed successfully, now we can get the download URL
+        task.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+          //console.log('Image File available at', downloadURL);
+          //var pm = document.getElementById('prog-msg');
+          //pm.textContent = 'Class image uploaded successfully';
+          callback(downloadURL,imagename);
+        });
+      }
+    );
+  }
+
+  uploadvideofile(caritemdid, videofile, callback){
+
+    if(videofile == undefined){
+      callback(null, null);
+      return;
+    }
+
+    let filename = videofile.name;
+    let lastIdx = filename.lastIndexOf(".");
+
+    let extension = "";
+    if (lastIdx > 0) {
+      extension = filename.substr(lastIdx);
+    }
+
+    let newFilename = caritemdid + extension;
+
+    var percentagetmp = 0, videoitem_upload_percentage = 0, currentptmp = 0;
+
+    //get file
+    var videofile = videofile;
+    // Create the file metadata
+    var metadata = {
+      contentType: 'video/mp4'
+    };
+    // Points to the root reference
+    var storageRef = firebase.storage().ref('carditems_video/'+newFilename);
+    // File name 
+    var videoname = storageRef.name
+    //Upload file
+    var task = storageRef.put(videofile, metadata);
+    //update progress bar
+    task.on('state_changed',
+      (snapshot) =>{
+        //var videoitem_upload_percentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+        percentagetmp = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        //videoitem_upload_percentage = percentagetmp - currentptmp;
+        //currentptmp = percentagetmp;
+
+        //this.setProgressMsg('Uploading video..');
+        //this.setProgressBarPercentage('videoitem_upload', videoitem_upload_percentage);
+        
+      },
+      (err) =>{
+        console.log(err);
+      },
+      ()=>{
+        // Upload completed successfully, now we can get the download URL
+        task.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+          //console.log('Video file available at', downloadURL);
+          callback(downloadURL,videoname);
+        });
+      }
+    );
+  }
+  /* Upload */
+
+  /* Progress Bar */
+  showUploadProgressBar(){
+
+    var dialog = document.querySelector('dialog');
+   
+    if (! dialog.showModal) {
+      dialogPolyfill.registerDialog(dialog);
+    }
+    
+    dialog.showModal();
+    
+    // select the target node
+    var target = document.querySelector('#p1');
+
+    // Callback function to execute when mutations are observed
+    var callback = (mutations)=> {
+      //var c = 0;
+      mutations.forEach((mutation)=> {
+        //console.log(mutation.type);
+
+        //if(mutation.type == 'attributes'){
+
+          if(mutation.attributeName == 'aria-valuenow'){
+        
+            /*if(mutation.target.attributes[4].nodeValue == 90){
+              if(c < 1){
+                this.saveClass();
+                c++;
+              }   
+            }*/
+            if(mutation.target.attributes[4].nodeValue == 100){
+              //$('.btnsaveclass').attr('disabled','true');//disable create button
+              //console.log('New class has succesfully submitted!');
+              //this.setProgressMsg('Completed');
+              //setTimeout(()=>{
+              //  location.href = '/vcourse.html?courseid='+this.courseid;
+              //}, 5000);
+            }
+
+          }  
+
+        //}
+        
+      });
+    };
+    
+    // create an observer instance
+    var observer = new MutationObserver(callback);
+    
+    // configuration of the observer:
+    var config = { attributes: true, childList: true, characterData: true }
+    
+    // pass in the target node, as well as the observer options
+    observer.observe(target, config);
+    
+    // later, you can stop observing
+    //observer.disconnect();
+  }
+
+  setProgressBarPercentage(type, inputpercentage){
+
+    var progressbar = document.getElementById('p1');
+    var percentage;
+    var videoitemCount = this.videoitemCount;
+
+    //var inputpercentage = parseInt(inputpercentage_tmp);
+
+    if(videoitemCount > 0){
+      switch(type){
+        case 'class_image_upload':  
+          percentage = (inputpercentage * 20) / 100;//20% for upload class image when there are video item to upload
+        break;
+  
+        case 'videoitem_upload':  
+          percentage = (inputpercentage *  (60 / this.cardCount)) / 100;//$percent  = 60 / total cards
+        break;
+  
+        case 'readingitem':  
+          percentage = inputpercentage;
+        break;
+  
+        case 'saveclass':  
+          percentage = inputpercentage;
+        break;
+  
+        default: percentage = inputpercentage; break;
+      }
+    }else{
+      switch(type){
+        case 'class_image_upload':  
+          percentage = (inputpercentage * 80) / 100;//80% for upload class image when theres no video item to upload
+        break;
+  
+        //case 'videoitem_upload':  
+        //  percentage = (inputpercentage *  (60 / this.cardCount)) / 100;//$percent  = 60 / total cards
+        //break;
+  
+        case 'readingitem':  
+          percentage = inputpercentage;
+        break;
+  
+        case 'saveclass':  
+          percentage = inputpercentage;
+        break;
+  
+        default: percentage = inputpercentage; break;
+      }
+    }   
+
+    this.progressPercentage = this.progressPercentage + percentage; // add percentage($percent) to our progress percentage
+
+    //console.log(this.progressPercentage);
+    //console.log(parseInt(this.progressPercentage));
+
+    var percent = parseInt(this.progressPercentage)
+    
+    progressbar.style.width = percent + '%';
+    progressbar.textContent = percent + '%';
+    progressbar.setAttribute('aria-valuenow', percent);
+    
+  }
+
+  setProgressMsg(msg){
+    var pm = document.getElementById('prog-msg');
+    pm.textContent = msg;
+  }
+
+  setRoundUpPercentage(){
+    var progressbar = document.getElementById('p1');
+    var percent = Math.round(this.progressPercentage)
+
+    this.progressPercentage = percent;
+    
+    progressbar.style.width = percent + '%';
+    progressbar.textContent = percent + '%';
+    progressbar.setAttribute('aria-valuenow', percent);
+  }
+  /* Progress Bar */
+
+  addclass(){
+
+    if(!$('#txtclasstitle').val()){
+      alert('Class title fields cant be empty');
+      $('#txtclasstitle').focus();
+      return;
+    }else if(!$('#txtclassdes').val()){
+      alert('Class description fields cant be empty');
+      $('#txtclassdes').focus();
+      return;
+    }else if(document.getElementById('class-img-prev-elid').attributes[1].value == '#'){
+      alert('Please provide an image for your class.');
+      return;
+    }//get confirmation
+
+    //this.showUploadProgressBar();//show the progress bar
+
+    //Upload course image first
+    //get image
+    const imagefile = document.querySelector('#class-input-img').files[0];
+    this.uploadimagefile(imagefile, (imageurl,imagename)=>{
+
+      var updates = {};
+
+      let classinfo = {};
+
+      var cardidlist = [];
+
+      //var uploaded_vid_count = 0 ;
+
+      var cards = $('.create-card-cont').children();//get all cards
+  
+      for(let i=0; i < cards.length; i++){
+        let cardid = cards[i].getAttribute('id');
+        let card_title = $(cards[i]).find('.card_title').val();
+        let card_des = $(cards[i]).find('.card_des').val();
+
+        var cardinfo = {
+          title : card_title,
+          description : card_des,
+          item_list : null
+        }
+        
+        cardidlist.push(cardid);//it collect all of the card id 
+
+        var carditems = $(cards[i]).find('.carditems-container').children();//get all card items
+        var carditemsidlist = [];
+
+        for(let y=0; y < carditems.length; y++){
+          var span_closed_but = carditems[y].firstElementChild;
+          var span_drag_but = span_closed_but.nextElementSibling;
+          var item_el = span_drag_but.nextElementSibling;
+          var carditemid = item_el.getAttribute('id');
+          var carditemtype = item_el.getAttribute('class');
+
+          var carditeminfo = {};
+
+          if(carditemtype === 'videoitem'){
+            //Upload video
+            //get video
+            var vidinput = $('#'+carditemid).find('.videoitem-input-vid');
+            const videofile = vidinput[0].files[0];
+            this.uploadvideofile(carditemid,videofile,(downloadURL,videoname)=>{
+
+              var video_updates = {};
+
+              if(downloadURL === null){//if video url and video name is null means there is no video to upload
+                video_updates['card_item/' + this.theUser.uid + '/' + carditemid + '/type/'] = 'videoitem';
+                video_updates['card_item/' + this.theUser.uid + '/' + carditemid + '/title/'] = $(item_el).find('.carditem-vid-title').val();
+                video_updates['card_item/' + this.theUser.uid + '/' + carditemid + '/description/'] = $(item_el).find('.carditem-vid-des').val();
+              }else{
+                //initialize class data to be save
+                carditeminfo = {
+                  type : 'videoitem',
+                  title: $(item_el).find('.carditem-vid-title').val(),
+                  description: $(item_el).find('.carditem-vid-des').val(),
+                  videoname: videoname,
+                  downloadURL : downloadURL
+                }
+                video_updates['card_item/' + this.theUser.uid + '/' + carditemid] = carditeminfo;
+                uploaded_vid_count++;           
+              }
+
+              this.saveVideoitem(video_updates, (err)=>{
+                if(!err){
+                  /*if(uploaded_vid_count == this.videoitemCount){
+                    this.setRoundUpPercentage();
+                    $('.btnsaveclass').attr('disabled','true');//disable create button
+                    console.log('New class has succesfully submitted!');
+                    this.setProgressMsg('Completed');
+                  }*/    
+                }
+              });
+
+            });
+
+          }else if(carditemtype === 'readinglist'){
+            var items = $(item_el).find('.items-container > ul').children();//get all card items
+            var itemsidlist = [];
+
+            for(let z=0; z < items.length; z++){
+              var itemelement, itemid, itemtype, content;
+              var iteminfo = {}
+              
+              itemtype = $(items[z]).find('.item').attr('data-type');
+              
+              if(itemtype === 'qa'){
+                itemelement = $(items[z]).find('.question_answer');
+                itemid = $(itemelement[0]).attr('id');
+                
+                var correct_answers = [];
+                var answers = $(itemelement[0]).find('.answer-row').children();
+                let i=0;
+                while( i < answers.length){
+                  var answer = {
+                    answer : $(answers[i]).find('.txtanswer').val(),
+                    message : $(answers[i]).find('.txtanswer-msg').val()
+                  }
+                  i++
+                  correct_answers.push(answer);
+                }
+               
+                var question_options = [];
+                var options = $(itemelement[0]).find('.option-row').children();
+                let i2=0;
+                while( i2 < options.length){
+                  var option = {
+                    option : $(options[i2]).find('.txtoption').val(),
+                    message : $(options[i2]).find('.txtoption-msg').val()
+                  }
+                  i2++
+                  question_options.push(option);
+                }
+
+                iteminfo = {
+                  text : $(itemelement[0]).find('.txtquestion').val(),
+                  itemtype : itemtype,
+                  quiz_type : '',
+                  correct_answers : correct_answers,
+                  question_options : question_options
+                }
+              }else{
+                itemelement = $(items[z]).find('.editable');
+                itemid = $(itemelement[0]).attr('id');
+                content = $(itemelement[0]).html();
+                iteminfo = {
+                  text : '',
+                  itemtype : itemtype,
+                  quiz_type : '',
+                  correct_answer : {},
+                  options : {}
+                }
+                if(itemtype === 'image'){
+                  var imgcontent = '';
+                  var images = $(itemelement[0]).children("div.medium-insert-images")
+                  for(let a=0; a < images.length; a++){
+                    var dclass = $(images[a]).attr('class');
+                    imgcontent += '<div class="' + dclass + '">' + $(images[a]).html() + '</div>';
+                  }
+                  iteminfo.text = imgcontent;
+                }else{
+                  iteminfo.text = content;
+                }  
+              }
+              updates['item/' + this.theUser.uid + '/' + itemid] = iteminfo;   
+              itemsidlist.push(itemid); 
+            }
+
+            carditeminfo = {
+              type : 'readinglist',
+              item_list: itemsidlist
+            }      
+            updates['card_item/' + this.theUser.uid + '/' + carditemid] = carditeminfo;
+          }
+          
+          carditemsidlist.push(carditemid);
+        }
+        cardinfo.item_list = carditemsidlist;
+        updates['card/' + this.theUser.uid + '/' + cardid] = cardinfo;      
+      }
+
+      if(imageurl === null){//if class image url and image name is null means we are updating the class
+        updates['class/' + this.theUser.uid + '/' + this.classid + '/title/'] = $('#txtclasstitle').val();
+        updates['class/' + this.theUser.uid + '/' + this.classid + '/description/'] = $('#txtclassdes').val();
+        updates['class/' + this.theUser.uid + '/' + this.classid + '/card_list/'] = cardidlist;
+      }else{
+        //initialize class data to be save
+        classinfo = {
+          title: $('#txtclasstitle').val(),
+          description: $('#txtclassdes').val(),
+          image_url: imageurl,
+          image_name: imagename,
+          pulished: false,
+          rating: 0,
+          how_many_times_taken: 0,
+          card_list: cardidlist,
+          course_id: this.courseid
+        };
+        updates['class/' + this.theUser.uid + '/' + this.classid] = classinfo;
+      }
+
+      updates['course/' + this.theUser.uid + '/' + this.courseid + '/class_list/' + this.classid] = this.classid;
+
+      //this.setProgressBarPercentage('readingitem', 10);// add 10% to progress bar
+      this.saveClass(updates, (err)=>{
+        if(!err){
+          this.setRoundUpPercentage();
+        }
+      });
+      
+  
+    });
+  }
+
+  saveVideoitem(updates, callback){
+    console.log('Saving Video..');
+    //this.setProgressMsg('Saving Video..');
+
+    firebase.database().ref().update(updates)
+    .then(() => {
+      console.log('A new video item has succesfully saved!');
+      //this.setProgressMsg('A new video item has succesfully saved!');
+      callback(null);
+    }).catch((err)=>{
+      console.log(err);
+      console.log("failed to insert");
+      callback(err);
+    });
+  }
+
+  saveClass(updates, callback){
+    console.log('Saving Class..');
+    //this.setProgressMsg('Saving Class..');
+
+    firebase.database().ref().update(updates)
+    .then(() => {   
+      //console.log('The class has succesfully saved!');
+      //this.setProgressMsg('The class has succesfully saved!');
+      //this.setProgressBarPercentage('saveclass', 10);// add 10% to progress bar 
+      callback(null);
+    }).catch((err)=>{
+      console.log(err);
+      console.log("failed to insert");
+      callback(err);
+    });
+  }
+
+  /* Updates Functions  */
+  updateclassinfo(){
+
+    if(!$('.btnsaveclass').attr('disabled') === true){
+      console.log('Unable to update, the class is not yet submitted.');
+      return;
+    }
+
+    if(!$('#txtclasstitle').val()){
+      alert('Class title fields cant be empty');
+      $('#txtclasstitle').focus();
+      return;
+    }else if(!$('#txtclassdes').val()){
+      alert('Class description fields cant be empty');
+      $('#txtclassdes').focus();
+      return;
+    }else if(!document.querySelector('#class-input-img').files[0]){
+      alert('Please provide an image for your class.');
+      return;
+    }//get confirmation
+
+    //Upload course image first
+    //get image
+    const imagefile = document.querySelector('#class-input-img').files[0];
+    this.uploadimagefile(classid, imagefile, (imageurl,imagename)=>{
+      if(imageurl === null){//cancel this operation when upload image failed
+        return;
+      }
+
+      var updates = {};
+
+      var cardidlist = [];
+
+      var cards = $('.create-card-cont').children();//get all cards
+  
+      for(let c=0; c < cards.length; c++){
+        let cardid = cards[c].getAttribute('id');
+    
+        cardidlist.push(cardid);//it collect all of the card id 
+ 
+      }
+
+      //initialize class data to be save
+      let classinfo = {
+        title: $('#txtclasstitle').val(),
+        description: $('#txtclassdes').val(),
+        image_url: imageurl,
+        image_name: imagename,
+        pulished: false,
+        rating: 0,
+        how_many_times_taken: 0,
+        card_list: cardidlist,
+        course_id: this.courseid
+      };
+
+      updates['class/' + this.theUser.uid + '/' + this.classid] = classinfo;
+      updates['course/' + this.theUser.uid + '/' + this.courseid + '/class_list/' + this.classid] = this.classid;
+
+      firebase.database().ref().update(updates)
+      .then(() => {
+        console.log('Update succesfull!');
+      }).catch((err)=>{
+        console.log(err);
+        console.log("failed to update");
+      });
+    });
+  }
+
+  updateclasscardslist(){
+
+    if(!$('.btnsaveclass').attr('disabled') === true){
+      console.log('Unable to update, the class is not yet submitted.');
+      return;
+    }
+    
+    var updates = {};
+
+    var cardidlist = [];
+
+    var cards = $('.create-card-cont').children();//get all cards
+    
+    for(let d=0; d < cards.length; d++){
+      let cardid = cards[d].getAttribute('id');
+        
+      cardidlist.push(cardid);//it collect all of the card id 
+
+    }
+
+    updates['class/' + this.classid + '/card_list'] = cardidlist;
+
+    firebase.database().ref().update(updates)
+    .then(() => {
+      console.log('Update succesfull!');
+    }).catch((err)=>{
+      console.log(err);
+      console.log("failed to update");
+    });
+  }
+
+  UpdateClassManager(modid){
+
+    var setclass = (classid)=>{
+      var classRef = firebase.database().ref('class/'+this.theUser.uid);
+      classRef.child(classid).once('value', (snapclass) => {
+        var classid = snapclass.key;
+        var classe = snapclass.val();
+        var class_cardidlist = snapclass.val().card_list;
+        $('.class-form').attr('id', classid);
+        $('#txtclasstitle').val(classe.title);
+        $('#txtclassdes').val(classe.description);
+        $('#class-img-prev-elid').attr('src', classe.image_url).parent('.prev-cont').css("display","block");
+        $('.action_title').text('Update Class');
+        $('.btncreate').text('Update');
+
+        if(class_cardidlist){
+          class_cardidlist.forEach(cardid => {
+            setcards(cardid);
+          });
+        }
+
+      });
+    }
+
+    var setcards = (cardid)=>{ 
+
+      var cardRef = firebase.database().ref('card/'+this.theUser.uid);
+      cardRef.child(cardid).once('value', (snapcard) => {
+        var cardid = snapcard.key;
+        cardid = cardid.substring(7, cardid.length);
+        var card_carditemlist = snapcard.val().item_list;
+        var card = new CardManager(this.theUser, cardid);//display one card
+        card.setTitle(snapcard.val().title);
+        card.setDescription(snapcard.val().description);
+
+        if(card_carditemlist){
+          card_carditemlist.forEach(carditemid => {
+            setcarditems(cardid, carditemid);
+          });
+        }
+
+      });
+    }
+
+    var setcarditems = (cardid, carditemid)=>{
+
+      var carditemRef = firebase.database().ref('card_item/'+this.theUser.uid);
+      carditemRef.child(carditemid).once('value', (snapcarditem) => {
+        var carditemid = snapcarditem.key , id;
+        var carditemtype = snapcarditem.val().type;
+
+        if(carditemtype === 'videoitem'){
+          
+          carditemid = carditemid.substring(13, carditemid.length);
+          var vtitle = snapcarditem.val().title;
+          var vdescription = snapcarditem.val().description;
+          var vname = snapcarditem.val().videoname;
+          var vurl = snapcarditem.val().downloadURL;
+
+          var videoitem = new VideoItemManager(cardid, carditemid);//create new video item
+          videoitem.setTitle(vtitle);
+          videoitem.setDescription(vdescription);
+          videoitem.setUrl(vurl);
+        }else{
+          
+          carditemid = carditemid.substring(15, carditemid.length);
+          var readingitem_itemlist = snapcarditem.val().item_list;
+          new ReadingItemManager(cardid, carditemid);//create new readinglist item
+
+          if(readingitem_itemlist){
+            readingitem_itemlist.forEach(itemid => {
+              setitems(carditemid, itemid);
+            });
+          }
+
+        } 
+      });
+    }
+
+    var setitems = (carditemid, itemid)=>{
+
+      var itemRef = firebase.database().ref('item/'+this.theUser.uid);
+      itemRef.child(itemid).once('value', (snapitem) => {
+        var itemid = snapitem.key;
+        itemid = itemid.substring(8, itemid.length);
+        var itemtype = snapitem.val().itemtype;
+
+        if(itemtype === 'qa'){
+
+          var quizitem = new QuizItemManager(carditemid, 'qa', itemid);//create new Quiz item
+
+          var correct_answers = snapitem.val().correct_answers;
+
+          if(correct_answers){
+            correct_answers.forEach(answer => {
+              quizitem.addAnswer(answer.answer, answer.message);
+            });
+          }  
+
+          var question_options = snapitem.val().question_options;
+
+          if(question_options){
+            question_options.forEach(option => {
+              quizitem.addOption(option.option, option.message);
+            });
+          }
+          
+        }else{
+          var item = new ItemManager(carditemid, itemtype, itemid);//create new item
+          item.setTextContent(snapitem.val().text);
+        }
+
+      });
+
+    }
+
+    setclass(modid);
+  }
+  /* Updates Functions  */
+
+}

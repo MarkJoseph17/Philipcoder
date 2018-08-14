@@ -36,7 +36,7 @@ class ViewCourseManager {
          <div class="col-md-8">
              <div id="courseid_${course.key}" class="jumbotron" style="padding:5px; border-radius: 0px; background-color: transparent;">
                  <h1 class="display-4">${ course.title }</h1>
-                 <p class="lead">${ course.description }</p>
+                 <p class="lead">T${ course.description }</p>
                  <hr class="my-4">
                  <a class="btn btn-primary btn-lg btnlearnmore" href="#" role="button" style="border-radius:0px;">Learn more</a>
              </div>
